@@ -25,6 +25,13 @@ body {
   flex-direction: column;
   height: 100%;
   width: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  /* Telegram scroll fix - prevent pull-to-refresh and enable smooth scrolling */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  /* Prevent bounce effect that can interfere with Telegram */
+  overscroll-behavior-y: contain;
 }
 
 .app__main-content {
@@ -34,8 +41,10 @@ body {
   justify-content: center;
   padding: 20px;
   overflow-y: auto;
-  /* Ensure content doesn't get hidden behind bottom navigation */
-  padding-bottom: calc(20px + 60px + env(safe-area-inset-bottom));
+  /* Ensure content doesn't get hidden behind fixed bottom navigation */
+  padding-bottom: calc(20px + 80px + env(safe-area-inset-bottom));
+  /* Add margin to account for fixed navigation */
+  margin-bottom: calc(60px + env(safe-area-inset-bottom));
 }
 
 /* Page styles */
@@ -123,11 +132,14 @@ body {
   backdrop-filter: blur(10px);
   border-top: 1px solid rgba(255, 255, 255, 0.2);
   padding: 8px 0;
+  /* Fixed positioning to sit at the very bottom */
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
   /* Ensure navigation sits at the very bottom with proper safe area */
   padding-bottom: calc(8px + env(safe-area-inset-bottom));
-  /* Position at the bottom of the viewport */
-  position: sticky;
-  bottom: 0;
   /* Ensure it stays above other content */
   z-index: 100;
 }
