@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import WebApp from '@twa-dev/sdk';
 import './App.css';
 import HomePage from './components/HomePage';
 import StatsPage from './components/StatsPage';
@@ -6,6 +7,16 @@ import SettingsPage from './components/SettingsPage';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('home');
+
+  useEffect(() => {
+    WebApp.ready();
+    WebApp.expand();
+  
+    // Check if the method exists before calling
+    if (WebApp.setupSwipeBehavior) {
+      WebApp.setupSwipeBehavior({ allow_vertical_swipe: false });
+    }
+  }, []);
 
   const renderPage = () => {
     switch (currentPage) {
