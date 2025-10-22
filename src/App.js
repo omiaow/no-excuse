@@ -18,6 +18,16 @@ function App() {
     }
   }, []);
 
+  useEffect(() => {
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+  
+    if (tg.setupSwipeBehavior) {
+      tg.setupSwipeBehavior({ allow_vertical_swipe: false });
+    }
+  }, []);
+
   const renderPage = () => {
     switch (currentPage) {
       case 'home':
