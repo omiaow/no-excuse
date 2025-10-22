@@ -27,7 +27,7 @@ body {
   width: 100%;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   /* Telegram scroll fix - prevent pull-to-refresh and enable smooth scrolling */
-  overflow-y: auto;
+  overflow-y: scroll;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   /* Prevent bounce effect that can interfere with Telegram */
@@ -131,16 +131,13 @@ body {
   background-color: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border-top: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 8px 0;
-  /* Fixed positioning to sit at the very bottom */
+  padding: 0;
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   width: 100%;
-  /* Ensure navigation sits at the very bottom with proper safe area */
-  padding-bottom: calc(8px + env(safe-area-inset-bottom));
-  /* Ensure it stays above other content */
+  padding-bottom: env(safe-area-inset-bottom);
   z-index: 100;
 }
 
