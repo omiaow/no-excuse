@@ -10,22 +10,7 @@ function App() {
 
   useEffect(() => {
     WebApp.ready();
-    WebApp.expand();
-  
-    // Check if the method exists before calling
-    if (WebApp.setupSwipeBehavior) {
-      WebApp.setupSwipeBehavior({ allow_vertical_swipe: false });
-    }
-  }, []);
-
-  useEffect(() => {
-    const tg = window.Telegram.WebApp;
-    tg.ready();
-    tg.expand();
-  
-    if (tg.setupSwipeBehavior) {
-      tg.setupSwipeBehavior({ allow_vertical_swipe: false });
-    }
+    WebApp.isClosingConfirmationEnabled = true;
   }, []);
 
   const renderPage = () => {
