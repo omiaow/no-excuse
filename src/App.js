@@ -8,12 +8,11 @@ import SettingsPage from './components/SettingsPage';
 function App() {
   const [currentPage, setCurrentPage] = useState('home');
 
-  useEffect(() => {
+  useEffect(() => {  // Initialize Telegram WebApp
     WebApp.ready();
     WebApp.expand();
     WebApp.disableVerticalSwipes();
     WebApp.enableClosingConfirmation();
-
   }, []);
 
   const renderPage = () => {
