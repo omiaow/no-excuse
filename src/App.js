@@ -13,6 +13,7 @@ function App() {
     WebApp.expand();
     WebApp.disableVerticalSwipes();
     WebApp.enableClosingConfirmation();
+    WebApp.setHeaderColor("#024A70");
   }, []);
 
   const renderPage = () => {
