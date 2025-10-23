@@ -11,7 +11,9 @@ function App() {
   useEffect(() => {
     WebApp.ready();
     WebApp.expand();
-    WebApp.setupSwipeBehavior({ allow_vertical_swipe: false });
+    WebApp.disableVerticalSwipes();
+    WebApp.enableClosingConfirmation();
+
   }, []);
 
   const renderPage = () => {
