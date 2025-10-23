@@ -141,14 +141,19 @@ body {
   justify-content: center;
   background: none;
   border: none;
-  padding: 8px 4px;
+  padding: 4px 0px;
+  margin: 4px 5px;
+  border-radius: 25px;
   cursor: pointer;
   transition: all 0.2s ease;
   color: #ffffff;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .app__nav-button--active {
   color: #F1F5F9;
+  background-color: #052F4A;
 }
 
 .app__nav-icon {

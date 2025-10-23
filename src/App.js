@@ -6,7 +6,7 @@ import StatsPage from './components/StatsPage';
 import SettingsPage from './components/SettingsPage';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('home');
+  const [currentPage, setCurrentPage] = useState('stats');
 
   useEffect(() => {  // Initialize Telegram WebApp
     WebApp.ready();
@@ -14,6 +14,7 @@ function App() {
     WebApp.disableVerticalSwipes();
     WebApp.enableClosingConfirmation();
     WebApp.setHeaderColor("#024A70");
+    WebApp.setBottomBarColor("#024A70");
     document.querySelector('meta[name="theme-color"]')
       ?.setAttribute('content', '#000000');
   }, []);
