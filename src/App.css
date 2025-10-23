@@ -49,22 +49,20 @@ body {
   display: inline-block;
   font-size: 2rem;
   margin: 0 0 1rem 0;
+  color: #024A70;
   font-weight: bold;
-
   background: linear-gradient(
-    to right,
-    #024A70 20%,
-    #00c3ff 40%,
+    to left,
+    #024A70 40%,
+    #00c3ff 45%,
     #ffffff 50%,
-    #00c3ff 60%,
-    #024A70 80%
+    #00c3ff 55%,
+    #024A70 60%
   );
-  
   background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  
-  animation: shine 3s linear infinite;
+  animation: shine 6s linear infinite;
 }
 
 @keyframes shine {
