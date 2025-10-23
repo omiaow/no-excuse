@@ -10,7 +10,8 @@ function App() {
 
   useEffect(() => {
     WebApp.ready();
-    WebApp.isClosingConfirmationEnabled = true;
+    WebApp.expand();
+    WebApp.setupSwipeBehavior({ allow_vertical_swipe: false });
   }, []);
 
   const renderPage = () => {
