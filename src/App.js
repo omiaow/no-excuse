@@ -15,7 +15,7 @@ function App() {
     WebApp.enableClosingConfirmation();
     WebApp.setHeaderColor("#024A70");
     document.querySelector('meta[name="theme-color"]')
-      ?.setAttribute('content', '#F1F5F9');
+      ?.setAttribute('content', '#000000');
   }, []);
 
   const renderPage = () => {
@@ -49,8 +49,8 @@ function App() {
           className={`app__nav-button ${currentPage === 'stats' ? 'app__nav-button--active' : ''}`}
           onClick={() => setCurrentPage('stats')}
         >
-          <span className="app__nav-icon">📊</span>
-          <span className="app__nav-label">Stats</span>
+          <span className="app__nav-icon">🏃</span>
+          <span className="app__nav-label">Start</span>
         </button>
         <button 
           className={`app__nav-button ${currentPage === 'settings' ? 'app__nav-button--active' : ''}`}
