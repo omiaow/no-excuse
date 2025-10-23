@@ -14,6 +14,8 @@ function App() {
     WebApp.disableVerticalSwipes();
     WebApp.enableClosingConfirmation();
     WebApp.setHeaderColor("#024A70");
+    WebApp.setBackgroundColor("#F1F5F9");
+    WebApp.setStatusBarStyle("light");
   }, []);
 
   const renderPage = () => {
