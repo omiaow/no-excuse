@@ -1,0 +1,280 @@
+import React, { useEffect, useRef, useState } from "react";
+import * as tf from "@tensorflow/tfjs";
+import * as poseDetection from "@tensorflow-models/pose-detection";
+import "@tensorflow/tfjs-backend-webgl";
+
+import isStanding from './poses/standing';
+import isSquat from './poses/squat';
+
+import isPushUp from './poses/pushUp';
+import isPushDown from './poses/pushDown';
+
+export default function SmartCounter({ exercise = 'push-up' }) {
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const detectorRef = useRef(null);
+
+  const [count, setCount] = useState(0);
+  const [status, setStatus] = useState("Loading model...");
+
+  const exerciseFunctions = {
+    'squat': {
+      initialPose: isStanding,
+      actionPose: isSquat
+    },
+    'push-up': {
+      initialPose: isPushUp,
+      actionPose: isPushDown
+    }
+  };
+
+  // Refs to store current state values that don’t reset each frame
+  const myPoseRef = useRef(true);
+  const stableFramesRef = useRef(0);
+
+  useEffect(() => {
+    async function init() {
+      await tf.setBackend("webgl");
+      const detector = await poseDetection.createDetector(
+        poseDetection.SupportedModels.MoveNet,
+        { modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING }
+      );
+      detectorRef.current = detector;
+
+      const video = videoRef.current;
+      
+      if (!video) {
+        console.error("Video element not found");
+        setStatus("Error: Video element not found");
+        return;
+      }
+      
+      // Try to get user media with error handling
+      let stream;
+      try {
+        // First try: front-facing camera
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "user" },
+        });
+      } catch (frontCameraError) {
+        console.warn("Front camera not available, trying back camera:", frontCameraError);
+        try {
+          // Fallback: any available camera
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: { ideal: "environment" } },
+          });
+        } catch (backCameraError) {
+          console.warn("Back camera not available, trying default:", backCameraError);
+          // Last resort: any video device
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+          });
+        }
+      }
+      
+      if (!stream) {
+        setStatus("Error: No camera found. Please enable camera access.");
+        return;
+      }
+      
+      video.srcObject = stream;
+
+      await new Promise((resolve) => {
+        video.onloadedmetadata = () => {
+          video.play().then(resolve).catch((err) => {
+            console.warn("Auto-play prevented:", err);
+            resolve();
+          });
+        };
+      });
+
+      setStatus("MoveNet ready — start exercising!");
+      runDetection();
+    }
+
+    init();
+  }, []);
+
+  async function runDetection() {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const detect = async () => {
+      if (detectorRef.current && video.readyState === 4) {
+        const poses = await detectorRef.current.estimatePoses(video);
+        if (poses[0]) {
+          drawPose(poses[0], ctx);
+          checkExercise(poses[0]);
+        }
+      }
+      requestAnimationFrame(detect);
+    };
+    detect();
+  }
+
+  function drawPose(pose, ctx) {
+    ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+    pose.keypoints.forEach((kp) => {
+      if (kp.score > 0.5) {
+        ctx.beginPath();
+        ctx.arc(kp.x, kp.y, 5, 0, 2 * Math.PI);
+        ctx.fillStyle = "aqua";
+        ctx.fill();
+      }
+    });
+  }
+
+  function checkExercise(pose) {
+
+    const stableFrames = stableFramesRef.current;
+    const currentPose = myPoseRef.current;
+
+    if (currentPose) {
+      const result = exerciseFunctions[exercise].actionPose(pose);
+      const isDetected = result.detected;
+      
+      // Initial pose → Action pose
+      if (isDetected) {
+        stableFramesRef.current++;
+        if (stableFrames > 3) {
+          myPoseRef.current = false;
+          stableFramesRef.current = 0;
+        }
+      } else {
+        stableFramesRef.current = 0;
+      }
+    } else {
+      const result = exerciseFunctions[exercise].initialPose(pose);
+      
+      // Action pose → Initial pose
+      if (result) {
+        stableFramesRef.current++;
+        if (stableFrames > 3) {
+          myPoseRef.current = true;
+          stableFramesRef.current = 0;
+          setCount((prev) => prev + 1); // ✅ functional update
+        }
+      } else {
+        stableFramesRef.current = 0;
+      }
+    }
+  }
+
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      width: '100%',
+      height: '100vh',
+      backgroundColor: '#000'
+    }}>
+      {/* Video container with overlay */}
+      <div style={{
+        position: 'relative',
+        width: '100%',
+        height: '80vh',
+        overflow: 'hidden'
+      }}>
+        <video
+          ref={videoRef}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover'
+          }}
+          autoPlay
+          playsInline
+          muted
+        />
+        <canvas
+          ref={canvasRef}
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover'
+          }}
+        />
+        
+        {/* Counter overlay */}
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          padding: '20px 40px',
+          borderRadius: '20px',
+          border: '3px solid #ff0000',
+          boxShadow: '0 0 20px rgba(255, 0, 0, 0.5)'
+        }}>
+          <div style={{
+            fontSize: '64px',
+            fontWeight: '900',
+            color: '#ff0000',
+            textShadow: '0 0 10px rgba(255, 0, 0, 0.8), 0 0 20px rgba(255, 0, 0, 0.6)',
+            fontFamily: 'Arial, sans-serif',
+            letterSpacing: '2px'
+          }}>
+            {count}
+          </div>
+        </div>
+
+        {/* Status indicator at top */}
+        <div style={{
+          position: 'absolute',
+          top: '20px',
+          left: 0,
+          right: 0,
+          textAlign: 'center'
+        }}>
+          <div style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            color: '#0ff',
+            padding: '8px 16px',
+            borderRadius: '20px',
+            fontSize: '14px',
+            fontWeight: '600',
+            display: 'inline-block'
+          }}>
+            {status}
+          </div>
+        </div>
+
+        {/* Loading/Error overlay */}
+        {(status === "Loading model..." || status.includes("Error")) && (
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000
+          }}>
+            <div style={{
+              textAlign: 'center',
+              padding: '20px'
+            }}>
+              <h2 style={{
+                fontSize: '18px',
+                color: '#fff',
+                marginBottom: '10px'
+              }}>{status}</h2>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
