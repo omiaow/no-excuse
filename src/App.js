@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import WebApp from '@twa-dev/sdk';
 import './App.css';
-import HomePage from './components/HomePage';
-import StatsPage from './components/StatsPage';
-import SettingsPage from './components/SettingsPage';
+import SquatPage from './components/SquatPage';
+import MainPage from './components/MainPage';
+import PushUpPage from './components/PushUpPage';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('stats');
+  const [currentPage, setCurrentPage] = useState('main');
 
   useEffect(() => {  // Initialize Telegram WebApp
     WebApp.ready();
@@ -21,14 +21,14 @@ function App() {
 
   const renderPage = () => {
     switch (currentPage) {
-      case 'home':
-        return <HomePage />;
-      case 'stats':
-        return <StatsPage />;
-      case 'settings':
-        return <SettingsPage />;
+      case 'squat':
+        return <SquatPage />;
+      case 'main':
+        return <MainPage />;
+      case 'push-up':
+        return <PushUpPage />;
       default:
-        return <HomePage />;
+        return <MainPage />;
     }
   };
 
@@ -40,25 +40,25 @@ function App() {
       
       <div className="app__bottom-navigation">
         <button 
-          className={`app__nav-button ${currentPage === 'home' ? 'app__nav-button--active' : ''}`}
-          onClick={() => setCurrentPage('home')}
+          className={`app__nav-button ${currentPage === 'squat' ? 'app__nav-button--active' : ''}`}
+          onClick={() => setCurrentPage('squat')}
         >
           <span className="app__nav-icon">🏠</span>
-          <span className="app__nav-label">Home</span>
+          <span className="app__nav-label">Приседание</span>
         </button>
         <button 
-          className={`app__nav-button ${currentPage === 'stats' ? 'app__nav-button--active' : ''}`}
-          onClick={() => setCurrentPage('stats')}
+          className={`app__nav-button ${currentPage === 'main' ? 'app__nav-button--active' : ''}`}
+          onClick={() => setCurrentPage('main')}
         >
           <span className="app__nav-icon">🏃</span>
-          <span className="app__nav-label">Start</span>
+          <span className="app__nav-label">Главное</span>
         </button>
         <button 
-          className={`app__nav-button ${currentPage === 'settings' ? 'app__nav-button--active' : ''}`}
-          onClick={() => setCurrentPage('settings')}
+          className={`app__nav-button ${currentPage === 'push-up' ? 'app__nav-button--active' : ''}`}
+          onClick={() => setCurrentPage('push-up')}
         >
           <span className="app__nav-icon">⚙️</span>
-          <span className="app__nav-label">Settings</span>
+          <span className="app__nav-label">Отжимание</span>
         </button>
       </div>
     </div>

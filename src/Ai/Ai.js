@@ -13,6 +13,8 @@ export default function SmartCounter({ exercise = 'push-up' }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const detectorRef = useRef(null);
+  const animationFrameRef = useRef(null);
+  const isMountedRef = useRef(true);
 
   const [count, setCount] = useState(0);
   const [status, setStatus] = useState("Loading model...");
@@ -93,30 +95,58 @@ export default function SmartCounter({ exercise = 'push-up' }) {
     }
 
     init();
+
+    // Cleanup function
+    return () => {
+      isMountedRef.current = false;
+      
+      // Stop animation frame
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      
+      // Stop video stream
+      if (videoRef.current && videoRef.current.srcObject) {
+        const stream = videoRef.current.srcObject;
+        const tracks = stream.getTracks();
+        tracks.forEach(track => track.stop());
+        videoRef.current.srcObject = null;
+      }
+    };
   }, []);
 
   async function runDetection() {
     const video = videoRef.current;
     const canvas = canvasRef.current;
+    
+    if (!video || !canvas) return;
+    
     const ctx = canvas.getContext("2d");
 
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
 
     const detect = async () => {
-      if (detectorRef.current && video.readyState === 4) {
+      if (!isMountedRef.current) return;
+      
+      if (detectorRef.current && video && video.readyState === 4) {
         const poses = await detectorRef.current.estimatePoses(video);
-        if (poses[0]) {
+        if (poses[0] && canvasRef.current && ctx) {
           drawPose(poses[0], ctx);
           checkExercise(poses[0]);
         }
       }
-      requestAnimationFrame(detect);
+      
+      if (isMountedRef.current) {
+        animationFrameRef.current = requestAnimationFrame(detect);
+      }
     };
     detect();
   }
 
   function drawPose(pose, ctx) {
+    if (!canvasRef.current || !ctx) return;
+    
     ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
     pose.keypoints.forEach((kp) => {
       if (kp.score > 0.5) {
@@ -164,21 +194,18 @@ export default function SmartCounter({ exercise = 'push-up' }) {
     }
   }
 
+  // Video container with overlay and counter overlay
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      width: '100%',
-      height: '100vh',
-      backgroundColor: '#000'
-    }}>
-      {/* Video container with overlay */}
       <div style={{
-        position: 'relative',
-        width: '100%',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100vw',
         height: '80vh',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        margin: 0,
+        padding: 0,
+        borderRadius: '0px 0px 30px 30px'
       }}>
         <video
           ref={videoRef}
@@ -206,7 +233,7 @@ export default function SmartCounter({ exercise = 'push-up' }) {
         {/* Counter overlay */}
         <div style={{
           position: 'absolute',
-          top: '50%',
+          top: '30%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
           backgroundColor: 'rgba(0, 0, 0, 0.7)',
@@ -224,27 +251,6 @@ export default function SmartCounter({ exercise = 'push-up' }) {
             letterSpacing: '2px'
           }}>
             {count}
-          </div>
-        </div>
-
-        {/* Status indicator at top */}
-        <div style={{
-          position: 'absolute',
-          top: '20px',
-          left: 0,
-          right: 0,
-          textAlign: 'center'
-        }}>
-          <div style={{
-            backgroundColor: 'rgba(0, 0, 0, 0.6)',
-            color: '#0ff',
-            padding: '8px 16px',
-            borderRadius: '20px',
-            fontSize: '14px',
-            fontWeight: '600',
-            display: 'inline-block'
-          }}>
-            {status}
           </div>
         </div>
 
@@ -275,6 +281,5 @@ export default function SmartCounter({ exercise = 'push-up' }) {
           </div>
         )}
       </div>
-    </div>
   );
 }
