@@ -44,21 +44,21 @@ function App() {
           onClick={() => setCurrentPage('squat')}
         >
           <span className="app__nav-icon">🏠</span>
-          <span className="app__nav-label">Приседание</span>
+          <span className="app__nav-label">History</span>
         </button>
         <button 
           className={`app__nav-button ${currentPage === 'main' ? 'app__nav-button--active' : ''}`}
           onClick={() => setCurrentPage('main')}
         >
           <span className="app__nav-icon">🏃</span>
-          <span className="app__nav-label">Главное</span>
+          <span className="app__nav-label">Start</span>
         </button>
         <button 
           className={`app__nav-button ${currentPage === 'push-up' ? 'app__nav-button--active' : ''}`}
           onClick={() => setCurrentPage('push-up')}
         >
           <span className="app__nav-icon">⚙️</span>
-          <span className="app__nav-label">Отжимание</span>
+          <span className="app__nav-label">Program</span>
         </button>
       </div>
     </div>
