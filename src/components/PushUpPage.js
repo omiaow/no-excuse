@@ -1,5 +1,5 @@
 import React from 'react';
-import SmartCounter from '../Ai/Ai';
+import SmartCounter from '../Ai/SmartCounter';
 
 function PushUpPage() {
   return (

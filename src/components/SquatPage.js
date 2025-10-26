@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import SmartCounter from '../Ai/Ai';
+import SmartCounter from '../Ai/SmartCounter';
 import './SquatPage.css';
 
 function SquatPage() {

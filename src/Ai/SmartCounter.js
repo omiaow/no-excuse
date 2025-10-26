@@ -14,7 +14,7 @@ export default function SmartCounter({ exercise = 'push-up' }) {
   const canvasRef = useRef(null);
   const detectorRef = useRef(null);
   const animationFrameRef = useRef(null);
-  const isMountedRef = useRef(true);
+  const streamRef = useRef(null);
 
   const [count, setCount] = useState(0);
   const [status, setStatus] = useState("Loading model...");
@@ -35,9 +35,6 @@ export default function SmartCounter({ exercise = 'push-up' }) {
   const stableFramesRef = useRef(0);
 
   useEffect(() => {
-    let videoEl = null;
-    let stream = null;
-  
     async function init() {
       await tf.setBackend("webgl");
       const detector = await poseDetection.createDetector(
@@ -45,87 +42,86 @@ export default function SmartCounter({ exercise = 'push-up' }) {
         { modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING }
       );
       detectorRef.current = detector;
-  
-      videoEl = videoRef.current;
-      if (!videoEl) {
+
+      const video = videoRef.current;
+      
+      if (!video) {
         console.error("Video element not found");
         setStatus("Error: Video element not found");
         return;
       }
-  
+      
+      // Try to get user media with error handling
+      let stream;
       try {
+        // First try: front-facing camera
         stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: "user" },
         });
       } catch (frontCameraError) {
         console.warn("Front camera not available, trying back camera:", frontCameraError);
         try {
+          // Fallback: any available camera
           stream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: { ideal: "environment" } },
           });
         } catch (backCameraError) {
           console.warn("Back camera not available, trying default:", backCameraError);
-          stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          // Last resort: any video device
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+          });
         }
       }
-  
+      
       if (!stream) {
         setStatus("Error: No camera found. Please enable camera access.");
         return;
       }
-  
-      // store references locally
-      videoEl.srcObject = stream;
-  
+      
+      streamRef.current = stream;
+      video.srcObject = stream;
+
       await new Promise((resolve) => {
-        videoEl.onloadedmetadata = () => {
-          videoEl.play().then(resolve).catch((err) => {
+        video.onloadedmetadata = () => {
+          video.play().then(resolve).catch((err) => {
             console.warn("Auto-play prevented:", err);
             resolve();
           });
         };
       });
-  
+
       setStatus("MoveNet ready — start exercising!");
       runDetection();
     }
-  
+
     init();
-  
-    // ✅ Cleanup (camera turn off)
-    return async () => {
-      isMountedRef.current = false;
-  
+
+    // Cleanup function
+    return () => {
+      // Stop animation frame
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
-
-      if (detectorRef.current) {
-        detectorRef.current.dispose();
-        detectorRef.current = null;
+      
+      // Stop video stream
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
       }
       
-      if (tf.backend()) {
-        await tf.backend().dispose(); // optional, frees GPU memory
-      }
-  
-      // use local references
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
-  
-      if (videoEl) {
-        videoEl.srcObject = null;
+      // Clear video source
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
       }
     };
   }, []);
-  
 
   async function runDetection() {
     const video = videoRef.current;
     const canvas = canvasRef.current;
     
-    if (!video || !canvas) return;
+    if (!canvas || !video) return;
     
     const ctx = canvas.getContext("2d");
 
@@ -133,25 +129,23 @@ export default function SmartCounter({ exercise = 'push-up' }) {
     canvas.height = video.videoHeight;
 
     const detect = async () => {
-      if (!isMountedRef.current) return;
+      // Check if component is still mounted
+      if (!canvasRef.current || !videoRef.current) return;
       
-      if (detectorRef.current && video && video.readyState === 4) {
+      if (detectorRef.current && video.readyState === 4) {
         const poses = await detectorRef.current.estimatePoses(video);
-        if (poses[0] && canvasRef.current && ctx) {
+        if (poses[0] && canvasRef.current) {
           drawPose(poses[0], ctx);
           checkExercise(poses[0]);
         }
       }
-      
-      if (isMountedRef.current) {
-        animationFrameRef.current = requestAnimationFrame(detect);
-      }
+      animationFrameRef.current = requestAnimationFrame(detect);
     };
     detect();
   }
 
   function drawPose(pose, ctx) {
-    if (!canvasRef.current || !ctx) return;
+    if (!canvasRef.current) return;
     
     ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
     pose.keypoints.forEach((kp) => {
@@ -200,7 +194,7 @@ export default function SmartCounter({ exercise = 'push-up' }) {
     }
   }
 
-  // Video container with overlay and counter overlay
+  // Video container with overlay
   return (
       <div style={{
         position: 'absolute',
@@ -239,7 +233,7 @@ export default function SmartCounter({ exercise = 'push-up' }) {
         {/* Counter overlay */}
         <div style={{
           position: 'absolute',
-          top: '30%',
+          top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
           backgroundColor: 'rgba(0, 0, 0, 0.7)',
