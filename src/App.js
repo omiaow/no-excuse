@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import WebApp from '@twa-dev/sdk';
 import './App.css';
-import SquatPage from './components/SquatPage';
 import MainPage from './components/MainPage';
-import PushUpPage from './components/PushUpPage';
+import ExercisePage from './components/ExercisePage';
+
+import HistoryPage from './components/HistoryPage';
+import ProgramPage from './components/ProgramPage';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('main');
@@ -19,14 +21,24 @@ function App() {
       ?.setAttribute('content', '#000000');
   }, []);
 
+  const handleStartExercise = () => {
+    setCurrentPage('exercise');
+  };
+
+  const handleCloseExercise = () => {
+    setCurrentPage('main');
+  };
+
   const renderPage = () => {
     switch (currentPage) {
-      case 'squat':
-        return <SquatPage />;
+      case 'history':
+        return <HistoryPage />;
+      case 'program':
+        return <ProgramPage />;
       case 'main':
-        return <MainPage />;
-      case 'push-up':
-        return <PushUpPage />;
+        return <MainPage onStartExercise={handleStartExercise} />;
+      case 'exercise':
+        return <ExercisePage onClose={handleCloseExercise} />;
       default:
         return <MainPage />;
     }
@@ -40,8 +52,8 @@ function App() {
       
       <div className="app__bottom-navigation">
         <button 
-          className={`app__nav-button ${currentPage === 'squat' ? 'app__nav-button--active' : ''}`}
-          onClick={() => setCurrentPage('squat')}
+          className={`app__nav-button ${currentPage === 'history' ? 'app__nav-button--active' : ''}`}
+          onClick={() => setCurrentPage('history')}
         >
           <span className="app__nav-icon">🏠</span>
           <span className="app__nav-label">History</span>
@@ -54,8 +66,8 @@ function App() {
           <span className="app__nav-label">Start</span>
         </button>
         <button 
-          className={`app__nav-button ${currentPage === 'push-up' ? 'app__nav-button--active' : ''}`}
-          onClick={() => setCurrentPage('push-up')}
+          className={`app__nav-button ${currentPage === 'program' ? 'app__nav-button--active' : ''}`}
+          onClick={() => setCurrentPage('program')}
         >
           <span className="app__nav-icon">⚙️</span>
           <span className="app__nav-label">Program</span>

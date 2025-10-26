@@ -35,6 +35,9 @@ export default function SmartCounter({ exercise = 'push-up' }) {
   const stableFramesRef = useRef(0);
 
   useEffect(() => {
+    let videoEl = null;
+    let stream = null;
+  
     async function init() {
       await tf.setBackend("webgl");
       const detector = await poseDetection.createDetector(
@@ -42,78 +45,81 @@ export default function SmartCounter({ exercise = 'push-up' }) {
         { modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING }
       );
       detectorRef.current = detector;
-
-      const video = videoRef.current;
-      
-      if (!video) {
+  
+      videoEl = videoRef.current;
+      if (!videoEl) {
         console.error("Video element not found");
         setStatus("Error: Video element not found");
         return;
       }
-      
-      // Try to get user media with error handling
-      let stream;
+  
       try {
-        // First try: front-facing camera
         stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: "user" },
         });
       } catch (frontCameraError) {
         console.warn("Front camera not available, trying back camera:", frontCameraError);
         try {
-          // Fallback: any available camera
           stream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: { ideal: "environment" } },
           });
         } catch (backCameraError) {
           console.warn("Back camera not available, trying default:", backCameraError);
-          // Last resort: any video device
-          stream = await navigator.mediaDevices.getUserMedia({
-            video: true,
-          });
+          stream = await navigator.mediaDevices.getUserMedia({ video: true });
         }
       }
-      
+  
       if (!stream) {
         setStatus("Error: No camera found. Please enable camera access.");
         return;
       }
-      
-      video.srcObject = stream;
-
+  
+      // store references locally
+      videoEl.srcObject = stream;
+  
       await new Promise((resolve) => {
-        video.onloadedmetadata = () => {
-          video.play().then(resolve).catch((err) => {
+        videoEl.onloadedmetadata = () => {
+          videoEl.play().then(resolve).catch((err) => {
             console.warn("Auto-play prevented:", err);
             resolve();
           });
         };
       });
-
+  
       setStatus("MoveNet ready — start exercising!");
       runDetection();
     }
-
+  
     init();
-
-    // Cleanup function
-    return () => {
+  
+    // ✅ Cleanup (camera turn off)
+    return async () => {
       isMountedRef.current = false;
-      
-      // Stop animation frame
+  
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
+
+      if (detectorRef.current) {
+        detectorRef.current.dispose();
+        detectorRef.current = null;
+      }
       
-      // Stop video stream
-      if (videoRef.current && videoRef.current.srcObject) {
-        const stream = videoRef.current.srcObject;
-        const tracks = stream.getTracks();
-        tracks.forEach(track => track.stop());
-        videoRef.current.srcObject = null;
+      if (tf.backend()) {
+        await tf.backend().dispose(); // optional, frees GPU memory
+      }
+  
+      // use local references
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+  
+      if (videoEl) {
+        videoEl.srcObject = null;
       }
     };
   }, []);
+  
 
   async function runDetection() {
     const video = videoRef.current;
