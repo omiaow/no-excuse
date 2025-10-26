@@ -9,15 +9,18 @@ import isSquat from './poses/squat';
 import isPushUp from './poses/pushUp';
 import isPushDown from './poses/pushDown';
 
-export default function SmartCounter({ exercise = 'push-up' }) {
+export default function SmartCounter({ exercise, setExercise, handleClose }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const detectorRef = useRef(null);
   const animationFrameRef = useRef(null);
   const streamRef = useRef(null);
 
-  const [count, setCount] = useState(0);
   const [status, setStatus] = useState("Loading model...");
+  const [timerInterval, setTimerInterval] = useState(null);
+
+  const [count, setCount] = useState(exercise.count);
+  const [duration, setDuration] = useState(exercise.duration);
 
   const exerciseFunctions = {
     'squat': {
@@ -30,9 +33,27 @@ export default function SmartCounter({ exercise = 'push-up' }) {
     }
   };
 
-  // Refs to store current state values that don’t reset each frame
+  // Refs to store current state values that don't reset each frame
   const myPoseRef = useRef(true);
   const stableFramesRef = useRef(0);
+
+  // Timer functions
+  const startTimer = () => {
+    if (timerInterval) return; // Timer already running
+    
+    const interval = setInterval(() => {
+      setDuration((prev) => prev + 1);
+    }, 1000);
+    
+    setTimerInterval(interval);
+  };
+
+  const stopTimer = () => {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      setTimerInterval(null);
+    }
+  };
 
   useEffect(() => {
     async function init() {
@@ -92,6 +113,7 @@ export default function SmartCounter({ exercise = 'push-up' }) {
       });
 
       setStatus("MoveNet ready — start exercising!");
+      startTimer(); // Start the timer when ready
       runDetection();
     }
 
@@ -99,6 +121,11 @@ export default function SmartCounter({ exercise = 'push-up' }) {
 
     // Cleanup function
     return () => {
+      setExercise((prev) => ({ ...prev, count: count, duration: duration }));
+
+      // Stop timer
+      stopTimer();
+      
       // Stop animation frame
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
@@ -164,7 +191,7 @@ export default function SmartCounter({ exercise = 'push-up' }) {
     const currentPose = myPoseRef.current;
 
     if (currentPose) {
-      const result = exerciseFunctions[exercise].actionPose(pose);
+      const result = exerciseFunctions[exercise.name].actionPose(pose);
       const isDetected = result.detected;
       
       // Initial pose → Action pose
@@ -178,7 +205,7 @@ export default function SmartCounter({ exercise = 'push-up' }) {
         stableFramesRef.current = 0;
       }
     } else {
-      const result = exerciseFunctions[exercise].initialPose(pose);
+      const result = exerciseFunctions[exercise.name].initialPose(pose);
       
       // Action pose → Initial pose
       if (result) {
@@ -192,6 +219,11 @@ export default function SmartCounter({ exercise = 'push-up' }) {
         stableFramesRef.current = 0;
       }
     }
+  }
+
+  if (exercise.durationLimit !== null && duration === exercise.durationLimit) {
+    handleClose();
+    return <></>;
   }
 
   // Video container with overlay
@@ -251,6 +283,40 @@ export default function SmartCounter({ exercise = 'push-up' }) {
             letterSpacing: '2px'
           }}>
             {count}
+          </div>
+        </div>
+
+        {/* Timer overlay */}
+        <div style={{
+          position: 'absolute',
+          bottom: '20px',
+          left: '20px',
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          padding: '15px 25px',
+          borderRadius: '15px',
+          border: '2px solid #00ff00',
+          boxShadow: '0 0 15px rgba(0, 255, 0, 0.5)'
+        }}>
+          <div style={{
+            fontSize: '24px',
+            fontWeight: 'bold',
+            color: '#00ff00',
+            textShadow: '0 0 5px rgba(0, 255, 0, 0.8)',
+            fontFamily: 'Arial, sans-serif',
+            textAlign: 'center'
+          }}>
+            {exercise.durationLimit !== null 
+              ? Math.floor((exercise.durationLimit - duration) / 60) + ':' + ((exercise.durationLimit - duration) % 60).toString().padStart(2, '0')
+              : Math.floor(duration / 60) + ':' + (duration % 60).toString().padStart(2, '0')
+            }
+          </div>
+          <div style={{
+            fontSize: '12px',
+            color: '#00ff00',
+            textAlign: 'center',
+            marginTop: '5px',
+            opacity: 0.8
+          }}>
           </div>
         </div>
 

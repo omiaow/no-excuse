@@ -1,4 +1,4 @@
-.squat-page-container {
+.camera-view-container {
   position: fixed;
   top: 0;
   left: 0;
@@ -10,15 +10,15 @@
   transition: transform 0.3s ease-in-out;
 }
 
-.squat-page-container.slide-down {
+.camera-view-container.slide-down {
   transform: translateY(0);
 }
 
-.squat-page-container.slide-up {
+.camera-view-container.slide-up {
   transform: translateY(-100%);
 }
 
-.squat-page-content {
+.camera-view-content {
   position: relative;
   width: 100%;
   height: 100%;
@@ -30,7 +30,7 @@
   box-sizing: border-box;
 }
 
-.close-button {
+.camera-view-content .close-button {
   position: absolute;
   top: 81vh;
   right: calc(50% - 30px);
@@ -49,7 +49,7 @@
   z-index: 1001;
 }
 
-.close-button svg {
+.camera-view-content .close-button svg {
   /* Set a size smaller than the button (e.g., 20px for a 30px high button) */
   width: 20px;
   height: 20px;
@@ -57,10 +57,10 @@
   display: block;
 }
 
-.close-button:hover {
+.camera-view-content .close-button:hover {
   background: rgba(255, 255, 255, 0.3);
 }
 
-.close-button:active {
+.camera-view-content .close-button:active {
   background: rgba(255, 255, 255, 0.4);
 }

@@ -1,11 +1,20 @@
-import React from 'react';
-import SquatPage from './SquatPage';
-import PushUpPage from './PushUpPage';
+import React, { useState } from 'react';
+import CameraView from './CameraView';
 
-function ExercisePage({ onClose, onStart }) {
-  return (
-    <SquatPage />
-  );
+function ExercisePage({ onClose }) {
+
+    const [exercise, setExercise] = useState({
+        name: 'squat',
+        count: 0,
+        duration: 0,
+        durationLimit: 15,
+        totalScore: 0,
+        averageScore: 0,
+    });
+
+    return (
+        <CameraView run={true} exercise={exercise} setExercise={setExercise} />
+    );
 }
 
 export default ExercisePage;
