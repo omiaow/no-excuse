@@ -7,7 +7,7 @@ function ExercisePage({ onClose }) {
         name: 'squat',
         count: 0,
         duration: 0,
-        durationLimit: 15,
+        durationLimit: 65,
         totalScore: 0,
         averageScore: 0,
     });
