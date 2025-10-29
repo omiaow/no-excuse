@@ -8,7 +8,7 @@ const formatDuration = (seconds) => {
 
 const StatisticsCards = ({ stats, totalSessions }) => {
   return (
-    <div className="history-page__stats-cards">
+    <div className="history-page__stats-cards" style={{ marginBottom: '0px' }}>
       <div className="stat-card">
         <div className="stat-card__icon">📊</div>
         <div className="stat-card__value">{stats.totalCount}</div>
