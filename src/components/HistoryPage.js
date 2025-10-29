@@ -3,6 +3,7 @@ import StatisticsCards from './stats/StatisticsCards';
 import WeeklyActivityChart from './stats/WeeklyActivityChart';
 import ProgressChart from './stats/ProgressChart';
 import ExerciseDistributionChart from './stats/ExerciseDistributionChart';
+import StatsCarousel from './stats/StatsCarousel';
 import ExerciseHistoryList from './stats/ExerciseHistoryList';
 
 // Mock data
@@ -107,33 +108,21 @@ function HistoryPage() {
   const stats = calculateTotalStats();
   const groupedExercises = groupExercisesByDate();
 
+  const slides = [
+    () => (<StatisticsCards stats={stats} totalSessions={mockExerciseHistory.length} />),
+    () => (<WeeklyActivityChart data={weeklyData} isMobile={isMobile} isExtraSmall={isExtraSmall} />),
+    () => (<ProgressChart data={progressData} isMobile={isMobile} isExtraSmall={isExtraSmall} />),
+    () => (<ExerciseDistributionChart data={exerciseDistribution} isMobile={isMobile} isExtraSmall={isExtraSmall} />),
+  ];
+
   return (
     <div className="history-page">
       <div className="history-page__header">
         <h1 className="history-page__title">Your Progress</h1>
       </div>
 
-      {/* Statistics Cards */}
-      <StatisticsCards stats={stats} totalSessions={mockExerciseHistory.length} />
-
-      {/* Charts Section */}
-      <div className="history-page__charts">
-        <WeeklyActivityChart 
-          data={weeklyData} 
-          isMobile={isMobile} 
-          isExtraSmall={isExtraSmall} 
-        />
-        <ProgressChart 
-          data={progressData} 
-          isMobile={isMobile} 
-          isExtraSmall={isExtraSmall} 
-        />
-        <ExerciseDistributionChart 
-          data={exerciseDistribution} 
-          isMobile={isMobile} 
-          isExtraSmall={isExtraSmall} 
-        />
-      </div>
+      {/* Swipeable, lazy-mount carousel for stats/charts */}
+      <StatsCarousel slides={slides} />
 
       {/* Exercise History List */}
       <ExerciseHistoryList groupedExercises={groupedExercises} />
