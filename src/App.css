@@ -155,10 +155,11 @@ body {
 }
 
 .app__nav-label {
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
+  margin-top: -1px;
 }
 
 
