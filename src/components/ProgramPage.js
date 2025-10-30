@@ -92,11 +92,13 @@ function ProgramPage() {
 
   return (
     <div className="app__page program-page">
-      <h1 className="app__page-title program-page__title">Create Program</h1>
+      <div className="program-page__header">
+        <h1 className="program-page__title">Exercise program</h1>
+      </div>
 
       {/* Picker Button and Modal */}
-      <button className="button program__choose-btn" onClick={() => setModalOpen(true)} style={{ width: '100%', marginTop: 24, fontSize: '1.12rem', fontWeight: 600, padding: '16px 0' }}>
-        <span>Choose exercise</span>
+      <button className="button program__choose-btn" onClick={() => setModalOpen(true)} style={{ width: '100%', marginTop: "5px", fontSize: '1.12rem', fontWeight: 600, padding: '16px 0' }}>
+        <span>Add exercise</span>
       </button>
       {modalOpen && (
         <ExercisePickerModal
@@ -144,6 +146,53 @@ function ProgramPage() {
               {configuringStepId === step.id && (
                 <div className="program__config">
                   <div className="program__config-grid">
+
+                    {step.mode === 'timer' ? (
+                      <div className="program__fields-row">
+                        <div className="program__field">
+                          <label className="app__page-description">Duration</label>
+                          <button
+                            className="button program__select-btn"
+                            onClick={() => setTimeModal({ open: true, stepId: step.id, field: 'durationSec' })}
+                          >
+                            <div className="wrap"><p>{timeOptions.find(o => o.value === step.durationSec)?.label}</p></div>
+                          </button>
+                        </div>
+                        <div className="program__field">
+                          <label className="app__page-description">Break</label>
+                          <button
+                            className="button program__select-btn"
+                            onClick={() => setTimeModal({ open: true, stepId: step.id, field: 'breakSec' })}
+                          >
+                            <div className="wrap"><p>{timeOptions.find(o => o.value === step.breakSec)?.label}</p></div>
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="program__fields-row">
+                        <div className="program__field">
+                          <label className="app__page-description">Max reps</label>
+                          <input
+                            className="input program__input"
+                            type="number"
+                            min={1}
+                            step={1}
+                            value={step.maxCount}
+                            onChange={(e) => updateStep(step.id, { maxCount: Math.max(1, Number(e.target.value || 0)) })}
+                          />
+                        </div>
+                        <div className="program__field">
+                          <label className="app__page-description">Break</label>
+                          <button
+                            className="button program__select-btn"
+                            onClick={() => setTimeModal({ open: true, stepId: step.id, field: 'breakSec' })}
+                          >
+                            <div className="wrap"><p>{timeOptions.find(o => o.value === step.breakSec)?.label}</p></div>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
                     <div>
                       <div className="program__mode-row">
                         <button
@@ -158,43 +207,16 @@ function ProgramPage() {
                         >
                           <div className="wrap"><p>Counter</p></div>
                         </button>
-                      </div>
-                    </div>
 
-                    {step.mode === 'timer' ? (
-                      <div>
-                        <label className="app__page-description">Duration:</label>
-                        <button
-                          className="button program__select-btn"
-                          onClick={() => setTimeModal({ open: true, stepId: step.id, field: 'durationSec' })}
-                        >
-                          <div className="wrap"><p>{timeOptions.find(o => o.value === step.durationSec)?.label}</p></div>
-                        </button>
+                        <div style={{ marginLeft: 'auto' }}>
+                          <button className="button" onClick={() => setConfiguringStepId(null)}>
+                            <div className="wrap"><p>Done</p></div>
+                          </button>
+                        </div>
                       </div>
-                    ) : (
-                      <div>
-                        <label className="app__page-description">Max reps:</label>
-                        <input
-                          className="input program__input"
-                          type="number"
-                          min={1}
-                          step={1}
-                          value={step.maxCount}
-                          onChange={(e) => updateStep(step.id, { maxCount: Math.max(1, Number(e.target.value || 0)) })}
-                        />
-                      </div>
-                    )}
-
-                    <div>
-                      <label className="app__page-description">Break:</label>
-                      <button
-                        className="button program__select-btn"
-                        onClick={() => setTimeModal({ open: true, stepId: step.id, field: 'breakSec' })}
-                      >
-                        <div className="wrap"><p>{timeOptions.find(o => o.value === step.breakSec)?.label}</p></div>
-                      </button>
                     </div>
                   </div>
+
                 </div>
               )}
             </div>
@@ -202,18 +224,6 @@ function ProgramPage() {
         )}
       </div>
 
-      {programSteps.length > 0 && (
-        <div className="card program-sticky">
-          <div className="program-sticky__row">
-            <div>
-              <div className="program-sticky__title">Total steps: {programSteps.length}</div>
-            </div>
-            <button className="button" onClick={() => setConfiguringStepId(null)}>
-              <div className="wrap"><p>Done</p></div>
-            </button>
-          </div>
-        </div>
-      )}
 
       {timeModal.open && (
         <TimePickerModal
