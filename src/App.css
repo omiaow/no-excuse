@@ -184,7 +184,7 @@ body {
   -webkit-tap-highlight-color: transparent;
   cursor: pointer;
   border: 0;
-  margin-top: 20px;
+  margin-top: 25px;
   position: relative;
   border-radius: var(--radius);
   background-color: var(--bg);
