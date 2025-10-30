@@ -78,12 +78,15 @@ function MainPage({ onStartExercise }) {
   const progressData = getProgressData();
   const exerciseDistribution = getExerciseDistribution();
   const stats = calculateTotalStats();
-  // Optional: show number of sessions
   const totalSessions = mockExerciseHistory.length;
 
   // Prepare the carousel slides
   const slides = [
-    () => (<StatisticsCards stats={stats} totalSessions={totalSessions} />),
+    () => (
+      <div className="chart-container">
+        <StatisticsCards stats={stats} totalSessions={totalSessions} />
+      </div>
+    ),
     () => (<WeeklyActivityChart data={weeklyData} isMobile={isMobile} isExtraSmall={isExtraSmall} />),
     () => (<ProgressChart data={progressData} isMobile={isMobile} isExtraSmall={isExtraSmall} />),
     () => (<ExerciseDistributionChart data={exerciseDistribution} isMobile={isMobile} isExtraSmall={isExtraSmall} />),
@@ -91,10 +94,10 @@ function MainPage({ onStartExercise }) {
 
   return (
     <div className="app__page app__page--stats" style={{ paddingTop: '30px' }}>
-      <h1 className="app__page-title" style={{ marginTop: '100px', marginBottom: '30px' }}>Day 2 with No Excuse</h1>
+      <h1 className="app__page-title" style={{ marginTop: '30px', marginBottom: '15px' }}>Day 2 with No Excuse</h1>
       {/* Insert Statistics Carousel here */}
       <StatsCarousel slides={slides} />
-      {/* <p className="app__page-description">Your personal training partner</p> */}
+      {/* <p className="app__page-description" style={{ marginTop: '60px' }}>Your personal training partner</p> */}
       <button className="button" onClick={onStartExercise}>
         <div className="wrap">
           <p>Let's Go</p>
