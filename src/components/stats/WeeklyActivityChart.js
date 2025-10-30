@@ -15,8 +15,9 @@ const WeeklyActivityChart = ({ data, isMobile, isExtraSmall }) => {
   return (
     <div className="chart-container">
       <h3 className="chart-title">Weekly Activity</h3>
-      <ResponsiveContainer width="100%" height={chartHeight}>
-        <BarChart data={data} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+      <div className="chart-no-interact">
+        <ResponsiveContainer width="100%" height={chartHeight}>
+          <BarChart data={data} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#024A70" opacity={0.1} />
           <XAxis 
             dataKey="date" 
@@ -42,8 +43,9 @@ const WeeklyActivityChart = ({ data, isMobile, isExtraSmall }) => {
             }}
           />
           <Bar dataKey="count" fill="#00c3ff" radius={[8, 8, 0, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 };

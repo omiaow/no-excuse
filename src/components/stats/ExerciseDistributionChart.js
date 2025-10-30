@@ -16,8 +16,9 @@ const ExerciseDistributionChart = ({ data, isMobile, isExtraSmall }) => {
   return (
     <div className="chart-container">
       <h3 className="chart-title">Exercise Distribution</h3>
-      <ResponsiveContainer width="100%" height={chartHeight}>
-        <PieChart>
+      <div className="chart-no-interact">
+        <ResponsiveContainer width="100%" height={chartHeight}>
+          <PieChart>
           <Pie
             data={data}
             cx="50%"
@@ -47,8 +48,9 @@ const ExerciseDistributionChart = ({ data, isMobile, isExtraSmall }) => {
               color: '#fff'
             }}
           />
-        </PieChart>
-      </ResponsiveContainer>
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 };

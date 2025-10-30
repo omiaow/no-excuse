@@ -15,8 +15,6 @@ function App() {
     WebApp.expand();
     WebApp.disableVerticalSwipes();
     WebApp.enableClosingConfirmation();
-    WebApp.setHeaderColor("#024A70");
-    WebApp.setBottomBarColor("#024A70");
     document.querySelector('meta[name="theme-color"]')
       ?.setAttribute('content', '#000000');
   }, []);

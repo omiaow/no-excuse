@@ -3,6 +3,9 @@ html, body {
   margin: 0;
   padding: 0;
   height: 100%;
+  /* Prevent Telegram/host overscroll and background exposure */
+  overscroll-behavior: none;
+  overflow: hidden;
 }
 
 body {
@@ -16,6 +19,8 @@ body {
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
   box-sizing: border-box;
+  /* Allow only vertical panning by default */
+  touch-action: pan-y;
 }
 
 /* App component styles */
@@ -24,6 +29,8 @@ body {
   flex-direction: column;
   height: 100%;
   width: 100%;
+  /* Contain scroll to this app */
+  overscroll-behavior: contain;
 }
 
 .app__main-content {
@@ -339,11 +346,6 @@ body {
   outline: none;
 }
 
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(2, 74, 112, 0.2);
-}
-
 .stat-card__icon {
   font-size: 32px;
   margin-bottom: 8px;
@@ -379,6 +381,8 @@ body {
   position: relative;
   overflow: hidden;
   width: 100%;
+  /* Allow horizontal interactions only inside carousel */
+  touch-action: pan-x;
 }
 
 .stats-carousel__track {
@@ -446,6 +450,11 @@ body {
 .chart-container .recharts-responsive-container {
   width: 100% !important;
   max-width: 100%;
+}
+
+/* Disable interactions inside charts */
+.chart-no-interact {
+  pointer-events: none;
 }
 
 .chart-title {
