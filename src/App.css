@@ -801,7 +801,7 @@ body {
 }
 
 .button--toggle.button--active {
-  background-color: #052F4A;
+  background-color: #024A70;
   color: #ffffff;
 }
 
@@ -810,7 +810,7 @@ body {
   height: 28px;
   padding: 0 6px;
   border-radius: 999px;
-  background: #052F4A;
+  background: #024A70;
   color: #ffffff;
   display: inline-flex;
   align-items: center;
