@@ -67,6 +67,7 @@ function ProgramPage() {
       durationSec: 60,
       maxCount: 10,
       breakSec: 30,
+      approaches: 1,
     };
     setProgramSteps(prev => [...prev, newStep]);
     setConfiguringStepId(newStep.id);
@@ -118,8 +119,8 @@ function ProgramPage() {
                     <div className="program-card__name">{step.exerciseLabel}</div>
                     <div className="program-card__meta">
                       {step.mode === 'timer'
-                        ? `Timer: ${formatSecondsToMMSS(step.durationSec)} • Break: ${formatSecondsToMMSS(step.breakSec)}`
-                        : `Reps: ${step.maxCount} • Break: ${formatSecondsToMMSS(step.breakSec)}`}
+                        ? `Timer: ${formatSecondsToMMSS(step.durationSec)} • Break: ${formatSecondsToMMSS(step.breakSec)} • Approaches: ${step.approaches || 1}`
+                        : `Reps: ${step.maxCount} • Break: ${formatSecondsToMMSS(step.breakSec)} • Approaches: ${step.approaches || 1}`}
                     </div>
                   </div>
                 </div>
@@ -153,6 +154,33 @@ function ProgramPage() {
                           >
                             <div className="wrap"><p>{timeOptions.find(o => o.value === step.breakSec)?.label}</p></div>
                           </button>
+                        </div>
+                        <div className="program__field">
+                          <label className="app__page-description">Approaches</label>
+                          <input
+                            className="input program__input"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            type="number"
+                            min={1}
+                            step={1}
+                            value={step.approaches || 1}
+                            onFocus={(e) => updateStep(step.id, { approaches: '' })}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (val === '') {
+                                updateStep(step.id, { approaches: '' });
+                              } else {
+                                const numVal = Math.max(1, Number(val));
+                                updateStep(step.id, { approaches: numVal });
+                              }
+                            }}
+                            onBlur={(e) => {
+                              if (!step.approaches || step.approaches === '') {
+                                updateStep(step.id, { approaches: 1 });
+                              }
+                            }}
+                          />
                         </div>
                       </div>
                     ) : (
@@ -192,6 +220,33 @@ function ProgramPage() {
                           >
                             <div className="wrap"><p>{timeOptions.find(o => o.value === step.breakSec)?.label}</p></div>
                           </button>
+                        </div>
+                        <div className="program__field">
+                          <label className="app__page-description">Approaches</label>
+                          <input
+                            className="input program__input"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            type="number"
+                            min={1}
+                            step={1}
+                            value={step.approaches || 1}
+                            onFocus={(e) => updateStep(step.id, { approaches: '' })}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (val === '') {
+                                updateStep(step.id, { approaches: '' });
+                              } else {
+                                const numVal = Math.max(1, Number(val));
+                                updateStep(step.id, { approaches: numVal });
+                              }
+                            }}
+                            onBlur={(e) => {
+                              if (!step.approaches || step.approaches === '') {
+                                updateStep(step.id, { approaches: 1 });
+                              }
+                            }}
+                          />
                         </div>
                       </div>
                     )}
