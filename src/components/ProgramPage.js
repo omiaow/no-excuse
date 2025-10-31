@@ -27,6 +27,7 @@ function ProgramPage() {
   const timeOptions = useMemo(() => {
     const options = [];
     for (let seconds = 30; seconds <= 5 * 60; seconds += 30) {
+      if (seconds > 120) seconds += 30;
       options.push({ value: seconds, label: formatSecondsToMMSS(seconds) });
     }
     return options;

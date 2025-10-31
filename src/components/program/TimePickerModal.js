@@ -20,7 +20,8 @@ function TimePickerModal({ title = 'Choose time', options, onChoose, onClose }) 
         <div className="program-modal__list">
           {options.map(opt => (
             <button key={opt.value} className="program-modal__item" onClick={() => onChoose(opt.value)}>
-              <span className="program-modal__label">{opt.label}</span>
+              <span className="program-modal__icon">🕒</span>
+              <span className="program-modal__label">{opt.label} minutes</span>
             </button>
           ))}
         </div>
