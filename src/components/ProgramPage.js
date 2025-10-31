@@ -161,10 +161,13 @@ function ProgramPage() {
                           <label className="app__page-description">Max reps</label>
                           <input
                             className="input program__input"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
                             type="number"
                             min={1}
                             step={1}
                             value={step.maxCount}
+                            onFocus={(e) => updateStep(step.id, { maxCount: '' })}
                             onChange={(e) => {
                               const val = e.target.value;
                               if (val === '') {

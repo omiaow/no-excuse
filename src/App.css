@@ -957,6 +957,7 @@ body {
 .program__input {
   width: 100%;
   margin-top: 6px;
+  caret-color: #000000;
 }
 
 .program__select-btn {
