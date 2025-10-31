@@ -25,20 +25,17 @@ const ExerciseHistoryList = ({ groupedExercises }) => {
               {dateGroup.exercises.map((exercise) => (
                 <div key={exercise.id} className="exercise-card">
                   <div className="exercise-card__header">
-                    <h4 className="exercise-card__name">{exercise.name}</h4>
+                    <div>
+                      <h4 className="exercise-card__name">{exercise.name}</h4>
+                      <div className="exercise-card__meta">
+                        <span className="exercise-card__meta-item">Reps: {exercise.count}</span>
+                        <span className="exercise-card__meta-separator">•</span>
+                        <span className="exercise-card__meta-item">Time: {formatDuration(exercise.duration)}</span>
+                      </div>
+                    </div>
                     <span className={`exercise-card__score exercise-card__score--${exercise.score >= 95 ? 'excellent' : exercise.score >= 85 ? 'good' : 'average'}`}>
                       {exercise.score}%
                     </span>
-                  </div>
-                  <div className="exercise-card__details">
-                    <div className="exercise-card__detail-item">
-                      <span className="exercise-card__detail-label">Reps:</span>
-                      <span className="exercise-card__detail-value">{exercise.count}</span>
-                    </div>
-                    <div className="exercise-card__detail-item">
-                      <span className="exercise-card__detail-label">Duration:</span>
-                      <span className="exercise-card__detail-value">{formatDuration(exercise.duration)}</span>
-                    </div>
                   </div>
                 </div>
               ))}
