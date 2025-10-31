@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import SmartCounter from '../Ai/SmartCounter';
+import SmartCounter from '../../Ai/SmartCounter';
 import './CameraView.css';
 
 function CameraView({ run = true, exercise, setExercise }) {
@@ -15,7 +15,7 @@ function CameraView({ run = true, exercise, setExercise }) {
       }
     }, 10);
     return () => clearTimeout(timer);
-  }, []);
+  }, [run]);
 
   const handleClose = () => {
     setIsClosing(true);

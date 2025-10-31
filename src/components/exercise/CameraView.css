@@ -50,10 +50,8 @@
 }
 
 .camera-view-content .close-button svg {
-  /* Set a size smaller than the button (e.g., 20px for a 30px high button) */
   width: 20px;
   height: 20px;
-  /* Optional: Ensure no other styling is interfering */
   display: block;
 }
 

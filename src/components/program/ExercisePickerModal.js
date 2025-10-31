@@ -46,5 +46,3 @@ function ExercisePickerModal({ exercises, onChoose, onClose }) {
 }
 
 export default ExercisePickerModal;
-
-

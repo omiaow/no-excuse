@@ -6,7 +6,6 @@ import ExerciseDistributionChart from './stats/ExerciseDistributionChart';
 import StatsCarousel from './stats/StatsCarousel';
 import ExerciseHistoryList from './stats/ExerciseHistoryList';
 
-// Mock data
 const mockExerciseHistory = [
   { id: 1, name: 'Push-ups', count: 25, duration: 120, score: 95, date: '2024-01-15' },
   { id: 2, name: 'Squats', count: 30, duration: 150, score: 88, date: '2024-01-15' },
@@ -20,7 +19,6 @@ const mockExerciseHistory = [
   { id: 10, name: 'Push-ups', count: 35, duration: 155, score: 99, date: '2024-01-20' },
 ];
 
-// Process data for charts
 const getWeeklyData = () => {
   const last7Days = mockExerciseHistory.slice(-7);
   const dailyTotals = {};
@@ -121,10 +119,8 @@ function HistoryPage() {
         <h1 className="history-page__title">Your Progress</h1>
       </div>
 
-      {/* Swipeable, lazy-mount carousel for stats/charts */}
       <StatsCarousel slides={slides} />
 
-      {/* Exercise History List */}
       <ExerciseHistoryList groupedExercises={groupedExercises} />
     </div>
   );

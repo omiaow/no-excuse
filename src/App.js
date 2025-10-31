@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import WebApp from '@twa-dev/sdk';
 import './App.css';
 import MainPage from './components/MainPage';
-import ExercisePage from './components/ExercisePage';
+import ExercisePage from './components/exercise/ExercisePage';
 
 import HistoryPage from './components/HistoryPage';
 import ProgramPage from './components/ProgramPage';
@@ -10,7 +10,7 @@ import ProgramPage from './components/ProgramPage';
 function App() {
   const [currentPage, setCurrentPage] = useState('main');
 
-  useEffect(() => {  // Initialize Telegram WebApp
+  useEffect(() => {
     WebApp.ready();
     WebApp.expand();
     WebApp.disableVerticalSwipes();
