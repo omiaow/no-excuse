@@ -122,7 +122,7 @@ function ProgramPage() {
           programSteps.map((step, index) => (
             <div key={step.id} className="card program-card">
               <div className="program-card__header">
-                <div className="program-card__title">
+                <div className="program-card__title" onClick={() => setConfiguringStepId(step.id)}>
                   <div className="badge">{index + 1}</div>
                   <div>
                     <div className="program-card__name">{step.exerciseLabel}</div>
@@ -134,9 +134,6 @@ function ProgramPage() {
                   </div>
                 </div>
                 <div className="program-card__buttons">
-                  <button className="button button--ghost" onClick={() => setConfiguringStepId(step.id)}>
-                    <div className="wrap"><p>Edit</p></div>
-                  </button>
                   <button className="button button--ghost" onClick={() => removeStep(step.id)}>
                     <div className="wrap"><p>Remove</p></div>
                   </button>
@@ -178,7 +175,20 @@ function ProgramPage() {
                             min={1}
                             step={1}
                             value={step.maxCount}
-                            onChange={(e) => updateStep(step.id, { maxCount: Math.max(1, Number(e.target.value || 0)) })}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (val === '') {
+                                updateStep(step.id, { maxCount: '' });
+                              } else {
+                                const numVal = Math.max(1, Number(val));
+                                updateStep(step.id, { maxCount: numVal });
+                              }
+                            }}
+                            onBlur={(e) => {
+                              if (step.maxCount === '') {
+                                updateStep(step.id, { maxCount: 1 });
+                              }
+                            }}
                           />
                         </div>
                         <div className="program__field">
