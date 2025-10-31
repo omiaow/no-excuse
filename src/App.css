@@ -39,7 +39,7 @@ body {
   align-items: flex-start;
   justify-content: center;
   padding: 0;
-  overflow-y: auto;
+  overflow-y: scroll;
   padding-bottom: calc(80px + env(safe-area-inset-bottom));
   margin-bottom: calc(60px + env(safe-area-inset-bottom));
   width: 100%;
@@ -503,11 +503,6 @@ body {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.exercise-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(2, 74, 112, 0.15);
-}
-
 .exercise-card__header {
   display: flex;
   justify-content: space-between;
@@ -908,7 +903,7 @@ body {
   margin-top: 2px;
   color: #024A70;
   opacity: 0.8;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .program-card__buttons {
@@ -1051,7 +1046,7 @@ body {
   position: fixed;
   z-index: 4000;
   left: 0; right: 0; top: 0; bottom: 0;
-  background: rgba(2, 12, 24, 0.22);
+  background: rgba(2, 12, 24, 0.6);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -1081,7 +1076,7 @@ body {
 }
 
 .program-modal__header {
-  background: linear-gradient(90deg, #024A70 60%, #00c3ff 100%);
+  background: linear-gradient(90deg,rgba(0, 115, 150, 1) 0%, rgba(2, 74, 112, 1) 25%, rgba(2, 74, 112, 1) 75%, rgba(0, 115, 150, 1) 100%);
   padding: 16px 0 12px 0;
   display: flex;
   align-items: center;

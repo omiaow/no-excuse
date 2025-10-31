@@ -70,7 +70,7 @@ function ProgramPage() {
       id: `${exercise.key}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
       exerciseKey: exercise.key,
       exerciseLabel: exercise.label,
-      mode: 'timer',
+      mode: 'counter',
       durationSec: 60,
       maxCount: 10,
       breakSec: 30,
@@ -129,7 +129,7 @@ function ProgramPage() {
                     <div className="program-card__meta">
                       {step.mode === 'timer'
                         ? `Timer: ${formatSecondsToMMSS(step.durationSec)} • Break: ${formatSecondsToMMSS(step.breakSec)}`
-                        : `Counter: ${step.maxCount} reps • Break: ${formatSecondsToMMSS(step.breakSec)}`}
+                        : `Reps: ${step.maxCount} • Break: ${formatSecondsToMMSS(step.breakSec)}`}
                     </div>
                   </div>
                 </div>
@@ -196,16 +196,16 @@ function ProgramPage() {
                     <div>
                       <div className="program__mode-row">
                         <button
-                          className={`button button--toggle ${step.mode === 'timer' ? 'button--active' : ''}`}
-                          onClick={() => updateStep(step.id, { mode: 'timer' })}
-                        >
-                          <div className="wrap"><p>Timer</p></div>
-                        </button>
-                        <button
                           className={`button button--toggle ${step.mode === 'counter' ? 'button--active' : ''}`}
                           onClick={() => updateStep(step.id, { mode: 'counter' })}
                         >
                           <div className="wrap"><p>Counter</p></div>
+                        </button>
+                        <button
+                          className={`button button--toggle ${step.mode === 'timer' ? 'button--active' : ''}`}
+                          onClick={() => updateStep(step.id, { mode: 'timer' })}
+                        >
+                          <div className="wrap"><p>Timer</p></div>
                         </button>
 
                         <div style={{ marginLeft: 'auto' }}>
