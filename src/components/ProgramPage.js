@@ -24,6 +24,8 @@ function ProgramPage() {
   const [configuringStepId, setConfiguringStepId] = useState(null);
   const [timeModal, setTimeModal] = useState({ open: false, stepId: null, field: null });
 
+  const [prev, setPrev] = useState(1);
+
   const timeOptions = useMemo(() => {
     const options = [];
     for (let seconds = 30; seconds <= 5 * 60; seconds += 30) {
@@ -67,7 +69,7 @@ function ProgramPage() {
       durationSec: 60,
       maxCount: 10,
       breakSec: 30,
-      approaches: 1,
+      sets: 1,
     };
     setProgramSteps(prev => [...prev, newStep]);
     setConfiguringStepId(newStep.id);
@@ -119,8 +121,8 @@ function ProgramPage() {
                     <div className="program-card__name">{step.exerciseLabel}</div>
                     <div className="program-card__meta">
                       {step.mode === 'timer'
-                        ? `Timer: ${formatSecondsToMMSS(step.durationSec)} • Break: ${formatSecondsToMMSS(step.breakSec)} • Approaches: ${step.approaches || 1}`
-                        : `Reps: ${step.maxCount} • Break: ${formatSecondsToMMSS(step.breakSec)} • Approaches: ${step.approaches || 1}`}
+                        ? `Timer: ${formatSecondsToMMSS(step.durationSec)} • Break: ${formatSecondsToMMSS(step.breakSec)} • Sets: ${step.sets || 1}`
+                        : `Reps: ${step.maxCount} • Break: ${formatSecondsToMMSS(step.breakSec)} • Sets: ${step.sets || 1}`}
                     </div>
                   </div>
                 </div>
@@ -156,7 +158,7 @@ function ProgramPage() {
                           </button>
                         </div>
                         <div className="program__field">
-                          <label className="app__page-description">Approaches</label>
+                          <label className="app__page-description">Sets</label>
                           <input
                             className="input program__input"
                             inputMode="numeric"
@@ -164,20 +166,23 @@ function ProgramPage() {
                             type="number"
                             min={1}
                             step={1}
-                            value={step.approaches || 1}
-                            onFocus={(e) => updateStep(step.id, { approaches: '' })}
+                            value={step.sets}
+                            onFocus={(e) => {
+                              setPrev(step.sets);
+                              updateStep(step.id, { sets: '' });
+                            }}
                             onChange={(e) => {
                               const val = e.target.value;
                               if (val === '') {
-                                updateStep(step.id, { approaches: '' });
+                                updateStep(step.id, { sets: '' });
                               } else {
                                 const numVal = Math.max(1, Number(val));
-                                updateStep(step.id, { approaches: numVal });
+                                updateStep(step.id, { sets: numVal });
                               }
                             }}
                             onBlur={(e) => {
-                              if (!step.approaches || step.approaches === '') {
-                                updateStep(step.id, { approaches: 1 });
+                              if (!step.sets || step.sets === '') {
+                                updateStep(step.id, { sets: prev });
                               }
                             }}
                           />
@@ -195,7 +200,10 @@ function ProgramPage() {
                             min={1}
                             step={1}
                             value={step.maxCount}
-                            onFocus={(e) => updateStep(step.id, { maxCount: '' })}
+                            onFocus={(e) => {
+                              setPrev(step.maxCount);
+                              updateStep(step.id, { maxCount: '' });
+                            }}
                             onChange={(e) => {
                               const val = e.target.value;
                               if (val === '') {
@@ -207,7 +215,7 @@ function ProgramPage() {
                             }}
                             onBlur={(e) => {
                               if (step.maxCount === '') {
-                                updateStep(step.id, { maxCount: 1 });
+                                updateStep(step.id, { maxCount: prev });
                               }
                             }}
                           />
@@ -222,7 +230,7 @@ function ProgramPage() {
                           </button>
                         </div>
                         <div className="program__field">
-                          <label className="app__page-description">Approaches</label>
+                          <label className="app__page-description">Sets</label>
                           <input
                             className="input program__input"
                             inputMode="numeric"
@@ -230,20 +238,23 @@ function ProgramPage() {
                             type="number"
                             min={1}
                             step={1}
-                            value={step.approaches || 1}
-                            onFocus={(e) => updateStep(step.id, { approaches: '' })}
+                            value={step.sets}
+                            onFocus={(e) => {
+                              setPrev(step.sets);
+                              updateStep(step.id, { sets: '' });
+                            }}
                             onChange={(e) => {
                               const val = e.target.value;
                               if (val === '') {
-                                updateStep(step.id, { approaches: '' });
+                                updateStep(step.id, { sets: '' });
                               } else {
                                 const numVal = Math.max(1, Number(val));
-                                updateStep(step.id, { approaches: numVal });
+                                updateStep(step.id, { sets: numVal });
                               }
                             }}
                             onBlur={(e) => {
-                              if (!step.approaches || step.approaches === '') {
-                                updateStep(step.id, { approaches: 1 });
+                              if (!step.sets || step.sets === '') {
+                                updateStep(step.id, { sets: prev });
                               }
                             }}
                           />

@@ -31,6 +31,8 @@ const ExerciseHistoryList = ({ groupedExercises }) => {
                         <span className="exercise-card__meta-item">Reps: {exercise.count}</span>
                         <span className="exercise-card__meta-separator">•</span>
                         <span className="exercise-card__meta-item">Time: {formatDuration(exercise.duration)}</span>
+                        <span className="exercise-card__meta-separator">•</span>
+                        <span className="exercise-card__meta-item">Sets: {exercise.sets}</span>
                       </div>
                     </div>
                     <span className={`exercise-card__score exercise-card__score--${exercise.score >= 95 ? 'excellent' : exercise.score >= 85 ? 'good' : 'average'}`}>

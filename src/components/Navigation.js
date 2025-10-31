@@ -41,6 +41,8 @@ function Navigation({ currentPage, onPageChange }) {
   }, []);
 
   if (isInputFocused) {
+    const mainScreen = document.querySelector('.app__main-content');
+    if (mainScreen) mainScreen.style.marginBottom = '0px';
     return null;
   }
 
