@@ -21,6 +21,8 @@ export default function SmartCounter({ exercise, setExercise, handleClose }) {
 
   const [count, setCount] = useState(exercise.count);
   const [duration, setDuration] = useState(exercise.duration);
+  const countRef = useRef(exercise.count);
+  const durationRef = useRef(exercise.duration);
 
   const exerciseFunctions = {
     'squat': {
@@ -33,16 +35,17 @@ export default function SmartCounter({ exercise, setExercise, handleClose }) {
     }
   };
 
-  // Refs to store current state values that don't reset each frame
   const myPoseRef = useRef(true);
   const stableFramesRef = useRef(0);
 
-  // Timer functions
   const startTimer = () => {
-    if (timerInterval) return; // Timer already running
+    if (timerInterval) return;
     
     const interval = setInterval(() => {
-      setDuration((prev) => prev + 1);
+      setDuration((prev) => {
+        durationRef.current = prev + 1;
+        return prev + 1;
+      });
     }, 1000);
     
     setTimerInterval(interval);
@@ -72,23 +75,17 @@ export default function SmartCounter({ exercise, setExercise, handleClose }) {
         return;
       }
       
-      // Try to get user media with error handling
       let stream;
       try {
-        // First try: front-facing camera
         stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: "user" },
         });
       } catch (frontCameraError) {
-        console.warn("Front camera not available, trying back camera:", frontCameraError);
         try {
-          // Fallback: any available camera
           stream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: { ideal: "environment" } },
           });
         } catch (backCameraError) {
-          console.warn("Back camera not available, trying default:", backCameraError);
-          // Last resort: any video device
           stream = await navigator.mediaDevices.getUserMedia({
             video: true,
           });
@@ -105,44 +102,38 @@ export default function SmartCounter({ exercise, setExercise, handleClose }) {
 
       await new Promise((resolve) => {
         video.onloadedmetadata = () => {
-          video.play().then(resolve).catch((err) => {
-            console.warn("Auto-play prevented:", err);
+          video.play().then(resolve).catch(() => {
             resolve();
           });
         };
       });
 
       setStatus("MoveNet ready — start exercising!");
-      startTimer(); // Start the timer when ready
+      startTimer();
       runDetection();
     }
 
     init();
 
-    // Cleanup function
     return () => {
-      setExercise((prev) => ({ ...prev, count: count, duration: duration }));
+      setExercise((prev) => ({ ...prev, count: countRef.current, duration: durationRef.current }));
 
-      // Stop timer
       stopTimer();
       
-      // Stop animation frame
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
       
-      // Stop video stream
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
         streamRef.current = null;
       }
       
-      // Clear video source
       if (videoRef.current) {
         videoRef.current.srcObject = null;
       }
     };
-  }, []);
+  }, [setExercise]);
 
   async function runDetection() {
     const video = videoRef.current;
@@ -156,7 +147,6 @@ export default function SmartCounter({ exercise, setExercise, handleClose }) {
     canvas.height = video.videoHeight;
 
     const detect = async () => {
-      // Check if component is still mounted
       if (!canvasRef.current || !videoRef.current) return;
       
       if (detectorRef.current && video.readyState === 4) {
@@ -194,7 +184,6 @@ export default function SmartCounter({ exercise, setExercise, handleClose }) {
       const result = exerciseFunctions[exercise.name].actionPose(pose);
       const isDetected = result.detected;
       
-      // Initial pose → Action pose
       if (isDetected) {
         stableFramesRef.current++;
         if (stableFrames > 3) {
@@ -207,13 +196,15 @@ export default function SmartCounter({ exercise, setExercise, handleClose }) {
     } else {
       const result = exerciseFunctions[exercise.name].initialPose(pose);
       
-      // Action pose → Initial pose
       if (result) {
         stableFramesRef.current++;
         if (stableFrames > 3) {
           myPoseRef.current = true;
           stableFramesRef.current = 0;
-          setCount((prev) => prev + 1); // ✅ functional update
+          setCount((prev) => {
+            countRef.current = prev + 1;
+            return prev + 1;
+          });
         }
       } else {
         stableFramesRef.current = 0;
@@ -262,7 +253,6 @@ export default function SmartCounter({ exercise, setExercise, handleClose }) {
           }}
         />
         
-        {/* Counter overlay */}
         <div style={{
           position: 'absolute',
           top: '50%',
@@ -286,7 +276,6 @@ export default function SmartCounter({ exercise, setExercise, handleClose }) {
           </div>
         </div>
 
-        {/* Timer overlay */}
         <div style={{
           position: 'absolute',
           bottom: '20px',
@@ -320,7 +309,6 @@ export default function SmartCounter({ exercise, setExercise, handleClose }) {
           </div>
         </div>
 
-        {/* Loading/Error overlay */}
         {(status === "Loading model..." || status.includes("Error")) && (
           <div style={{
             position: 'absolute',

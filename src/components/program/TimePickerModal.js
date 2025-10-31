@@ -36,5 +36,3 @@ function TimePickerModal({ title = 'Choose time', options, onChoose, onClose }) 
 }
 
 export default TimePickerModal;
-
-

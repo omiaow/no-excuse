@@ -32,7 +32,6 @@ export default function detectPushUpDownPose(
   ];
   const points = {};
 
-  // Check if all keypoints are confidently detected
   for (const n of names) {
     const kp = getKeypoint(n);
     if (!kp || kp.score < confidenceThreshold) {
@@ -43,16 +42,13 @@ export default function detectPushUpDownPose(
     points[n] = kp;
   }
 
-  // Compute arm angles (shoulder–elbow–wrist)
   const leftAngle = getAngle(points.left_shoulder, points.left_elbow, points.left_wrist);
   const rightAngle = getAngle(points.right_shoulder, points.right_elbow, points.right_wrist);
   const avgAngle = (leftAngle + rightAngle) / 2;
 
-  // Normalize angle → push down score (100 = perfect 90°, 0 = fully extended)
   const score = angleToPushDownPercent(avgAngle);
 
-  // Determine if currently pushing down (half or more)
-  const detected = score >= 40; // 40%+ depth considered a push down
+  const detected = score >= 40;
 
   history.push({ detected, score });
   if (history.length > smoothWindow) history.shift();
@@ -60,22 +56,14 @@ export default function detectPushUpDownPose(
   return getSmoothedResult(history, smoothWindow);
 }
 
-/**
- * Converts elbow angle to push down percentage (0–100)
- */
 function angleToPushDownPercent(angle) {
-  // Map angle 180° → 0%, 90° → 100%
   let pct = ((180 - angle) / (180 - 90)) * 100;
   pct = Math.max(0, Math.min(100, pct));
 
-  // Slight penalty for over-bending (<80°)
   if (angle < 80) pct -= (80 - angle) * 1.5;
   return Math.max(0, Math.min(100, pct));
 }
 
-/**
- * Smooths results using sliding window average
- */
 function getSmoothedResult(history, windowSize) {
   const len = Math.min(history.length, windowSize);
   const avgScore =

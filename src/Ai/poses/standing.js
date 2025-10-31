@@ -1,4 +1,3 @@
-// --- helper to compute the angle between three points ---
 function getAngle(pA, pB, pC) {
   const baX = pA.x - pB.x;
   const baY = pA.y - pB.y;
@@ -17,14 +16,12 @@ function getAngle(pA, pB, pC) {
   return Math.acos(cosine) * (180 / Math.PI);
 }
 
-// --- main smoother and detector ---
 export default function isStandingSmooth(
   pose,
   confidenceThreshold = 0.3,
   straightLegAngle = 165,
-  smoothWindow = 5 // number of recent frames to average
+  smoothWindow = 5
 ) {
-  // static-like memory to smooth out transitions
   if (!isStandingSmooth.history) isStandingSmooth.history = [];
   const history = isStandingSmooth.history;
 
@@ -36,7 +33,6 @@ export default function isStandingSmooth(
   for (const n of names) {
     const kp = getKeypoint(n);
     if (!kp || kp.score < confidenceThreshold) {
-      // store false in history and return smoothed result
       history.push(false);
       if (history.length > smoothWindow) history.shift();
       return history.filter(Boolean).length > smoothWindow / 2;
@@ -49,11 +45,9 @@ export default function isStandingSmooth(
 
   const isStanding = leftAngle >= straightLegAngle && rightAngle >= straightLegAngle;
 
-  // --- smoothing logic ---
   history.push(isStanding);
   if (history.length > smoothWindow) history.shift();
 
-  // return majority vote of last N frames
   const trueCount = history.filter(Boolean).length;
   return trueCount > smoothWindow / 2;
 }

@@ -2,14 +2,8 @@ import React, { useMemo, useState, useEffect } from 'react';
 import ExercisePickerModal from './program/ExercisePickerModal';
 import TimePickerModal from './program/TimePickerModal';
 
-// Basic catalog of exercises. Feel free to expand.
 const EXERCISE_CATALOG = [
   { key: 'push_ups', label: 'Push-ups' },
-  { key: 'squats', label: 'Squats' },
-  { key: 'plank', label: 'Plank' },
-  { key: 'jumping_jacks', label: 'Jumping Jacks' },
-  { key: 'lunges', label: 'Lunges' },
-  { key: 'sit_ups', label: 'Sit-ups' },
   { key: 'squats', label: 'Squats' },
   { key: 'plank', label: 'Plank' },
   { key: 'jumping_jacks', label: 'Jumping Jacks' },
@@ -27,14 +21,12 @@ function formatSecondsToMMSS(totalSeconds) {
 
 function ProgramPage() {
   const [programSteps, setProgramSteps] = useState([]);
-  const [selectedExerciseKey, setSelectedExerciseKey] = useState('');
   const [configuringStepId, setConfiguringStepId] = useState(null);
   const [timeModal, setTimeModal] = useState({ open: false, stepId: null, field: null });
 
-  // Generate time options [00:30, 01:00, 01:30, ...] up to 10 minutes
   const timeOptions = useMemo(() => {
     const options = [];
-    for (let seconds = 30; seconds <= 10 * 60; seconds += 30) {
+    for (let seconds = 30; seconds <= 5 * 60; seconds += 30) {
       options.push({ value: seconds, label: formatSecondsToMMSS(seconds) });
     }
     return options;
@@ -96,7 +88,6 @@ function ProgramPage() {
         <h1 className="program-page__title">Exercise program</h1>
       </div>
 
-      {/* Picker Button and Modal */}
       <button className="button program__choose-btn" onClick={() => setModalOpen(true)} style={{ width: '100%', marginTop: "5px", fontSize: '1.12rem', fontWeight: 600, padding: '16px 0' }}>
         <span>Add exercise</span>
       </button>
@@ -105,14 +96,12 @@ function ProgramPage() {
           exercises={EXERCISE_CATALOG}
           onChoose={key => {
             setModalOpen(false);
-            setSelectedExerciseKey(key);
             addSelectedExercise(key);
           }}
           onClose={() => setModalOpen(false)}
         />
       )}
 
-      {/* Program list */}
       <div className="program__list">
         {programSteps.length === 0 ? (
           <div className="card program__empty">
@@ -250,7 +239,5 @@ function ProgramPage() {
     </div>
   );
 }
-
-// moved ExercisePickerModal into ./program/ExercisePickerModal
 
 export default ProgramPage;

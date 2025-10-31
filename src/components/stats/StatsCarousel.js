@@ -1,17 +1,10 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 
-// A minimal swipeable carousel that lazily mounts slides.
-// Props:
-// - slides: array of functions (index) => ReactNode or elements
-// - initialIndex: number
-// - onIndexChange: (index) => void
-// Only the current slide is mounted by default. Neighbors can be pre-mounted for smoother UX.
 export default function StatsCarousel({ slides, initialIndex = 0, onIndexChange }) {
   const containerRef = useRef(null);
   const [current, setCurrent] = useState(initialIndex);
   const [mounted, setMounted] = useState(() => new Set([initialIndex]));
 
-  // touch handling
   const startXRef = useRef(0);
   const deltaXRef = useRef(0);
   const isDraggingRef = useRef(false);
@@ -39,7 +32,7 @@ export default function StatsCarousel({ slides, initialIndex = 0, onIndexChange 
   const onTouchEnd = () => {
     if (!isDraggingRef.current) return;
     isDraggingRef.current = false;
-    const threshold = 50; // pixels
+    const threshold = 50;
     const dx = deltaXRef.current;
     let nextIndex = current;
     if (dx < -threshold && current < slideCount - 1) {
@@ -47,7 +40,6 @@ export default function StatsCarousel({ slides, initialIndex = 0, onIndexChange 
     } else if (dx > threshold && current > 0) {
       nextIndex = Math.max(current - 1, 0);
     }
-    // Ensure neighbors are mounted during animation
     setMounted(new Set([nextIndex, Math.max(nextIndex - 1, 0), Math.min(nextIndex + 1, slideCount - 1)]));
     setCurrent(nextIndex);
     clearTimeout(animTimeoutRef.current);
@@ -57,7 +49,6 @@ export default function StatsCarousel({ slides, initialIndex = 0, onIndexChange 
     deltaXRef.current = 0;
   };
 
-  // Also handle dot click to temporarily mount neighbors then clean up
   const goTo = (idx) => {
     if (idx === current) return;
     setMounted(new Set([idx, Math.max(idx - 1, 0), Math.min(idx + 1, slideCount - 1)]));
