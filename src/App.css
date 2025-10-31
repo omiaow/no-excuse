@@ -1133,7 +1133,7 @@ body {
   display: flex;
   align-items: center;
   gap: 18px;
-  padding: 20px 32px;
+  padding: 10px 32px;
   font-size: 1.18rem;
   font-weight: 600;
   background: rgba(255,255,255,0.89);
@@ -1151,11 +1151,11 @@ body {
   border: 2px solid #00c3ff;
 }
 .program-modal__icon {
-  font-size: 2.7rem;
-  width: 40px;
+  font-size: 19px;
+  width: 25px;
 }
 .program-modal__label {
-  font-size: 1.18rem;
+  font-size: 15px;
 }
 @media (max-width: 480px) {
   .program-modal__header {
@@ -1169,13 +1169,13 @@ body {
     gap: 10px;
   }
   .program-modal__item {
-    padding: 13px 12px;
-    font-size: 1rem;
+    padding: 8px 12px;
+    font-size: 17px;
     border-radius: 14px;
   }
   .program-modal__icon {
-    font-size: 2rem;
-    width: 28px;
+    font-size: 19px;
+    width: 25px;
   }
 }
 
