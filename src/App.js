@@ -24,7 +24,7 @@ function App() {
   };
 
   const handleCloseExercise = () => {
-    setCurrentPage('main');
+    setCurrentPage('history');
   };
 
   const renderPage = () => {
@@ -36,7 +36,7 @@ function App() {
       case 'main':
         return <MainPage onStartExercise={handleStartExercise} />;
       case 'exercise':
-        return <ExercisePage onClose={handleCloseExercise} />;
+        return <ExercisePage close={handleCloseExercise} />;
       default:
         return <MainPage />;
     }

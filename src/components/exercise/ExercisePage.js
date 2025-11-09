@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import CameraView from './CameraView';
+import useHttp from '../../hooks/http.hook';
 
 const formatDuration = (seconds) => {
   const mins = Math.floor(seconds / 60);
@@ -7,9 +8,29 @@ const formatDuration = (seconds) => {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 };
 
-function ExercisePage({ onClose }) {
+function ExercisePage({ close }) {
+    const { request } = useHttp();
 
     const [records, setRecords] = useState([]);
+
+    console.log(records);
+
+    const handleSave = async () => {
+        try {
+            await request('/app/records', 'POST', records.map(record => ({
+                exercise_id: record.id,
+                reps_count: record.count,
+                duration: record.duration,
+                sets_count: 1,
+                score: parseInt(record.averageScore),
+                date: new Date().toISOString(),
+                paid: false,
+            })));
+            close?.();
+        } catch (error) {
+            console.error('Failed to save records:', error);
+        }
+    };
 
     return (
         <>
@@ -29,7 +50,7 @@ function ExercisePage({ onClose }) {
                                                 <span className="exercise-card__meta-separator">•</span>
                                                 <span className="exercise-card__meta-item">Time: {formatDuration(record.duration)}</span>
                                                 <span className="exercise-card__meta-separator">•</span>
-                                                <span className="exercise-card__meta-item">Score: {record.averageScore.toFixed(2)}</span>
+                                                <span className="exercise-card__meta-item">Score: {parseInt(record.averageScore)}%</span>
                                             </div>
                                         </div>
                                     </div>
@@ -37,6 +58,7 @@ function ExercisePage({ onClose }) {
                             ))}
                         </div>
                     </div>
+                    <button className="history-page__list-button" onClick={handleSave}>Save</button>
                 </div>
             )}
         </>
