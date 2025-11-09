@@ -455,6 +455,7 @@ body {
 /* Exercise History List */
 .history-page__list-container {
   margin-top: 20px;
+  width: 100%;
 }
 
 .history-page__list-title {

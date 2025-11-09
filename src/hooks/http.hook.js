@@ -1,7 +1,7 @@
 import React from "react";
 import { useState, useCallback } from "react";
 
-import AuthContext from "../context/AuthContext";
+import AuthContext from "../context/auth.context";
 
 const useHttp = () => {
   const [loading, setLoading] = useState(false);
