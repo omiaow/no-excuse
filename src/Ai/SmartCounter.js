@@ -3,60 +3,96 @@ import * as tf from "@tensorflow/tfjs";
 import * as poseDetection from "@tensorflow-models/pose-detection";
 import "@tensorflow/tfjs-backend-webgl";
 
-import isStanding from './poses/standing';
-import isSquat from './poses/squat';
+import useHttp from '../hooks/http.hook';
 
-import isPushUp from './poses/pushUp';
-import isPushDown from './poses/pushDown';
+import exerciseFunctions from './poses/pose';
+import { programToExercise, drawPose } from './utils';
 
-export default function SmartCounter({ exercise, setExercise, handleClose }) {
+import './SmartCounter.css';
+
+import BreakModal from './components/BreakModal';
+import StatusOverlay from './components/StatusOverlay';
+import Counters from './components/Counters';
+
+export default function SmartCounter({ handleClose, setRecords }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const detectorRef = useRef(null);
   const animationFrameRef = useRef(null);
   const streamRef = useRef(null);
 
+  const { request } = useHttp();
+
   const [status, setStatus] = useState("Loading model...");
-  const [timerInterval, setTimerInterval] = useState(null);
 
-  const [count, setCount] = useState(exercise.count);
-  const [duration, setDuration] = useState(exercise.duration);
-  const countRef = useRef(exercise.count);
-  const durationRef = useRef(exercise.duration);
+  const [programs, setPrograms] = useState([]);
+  const [exercise, setExercise] = useState();
 
-  const exerciseFunctions = {
-    'squat': {
-      initialPose: isStanding,
-      actionPose: isSquat
-    },
-    'push-up': {
-      initialPose: isPushUp,
-      actionPose: isPushDown
-    }
-  };
+  const [exerciseReady, setExerciseReady] = useState(false);
+
+  const [time, setTime] = useState();
+  const [timeLimit, setTimeLimit] = useState();
+  const [isBreak, setIsBreak] = useState(false);
 
   const myPoseRef = useRef(true);
   const stableFramesRef = useRef(0);
+  const breakStartedRef = useRef(false);
+  const breakCompletedRef = useRef(false);
+  const currentMaxScoreRef = useRef(0);
+  const totalScoreRef = useRef(0);
 
-  const startTimer = () => {
-    if (timerInterval) return;
-    
-    const interval = setInterval(() => {
-      setDuration((prev) => {
-        durationRef.current = prev + 1;
-        return prev + 1;
-      });
-    }, 1000);
-    
-    setTimerInterval(interval);
+  const resetScoreTracking = () => {
+    currentMaxScoreRef.current = 0;
+    totalScoreRef.current = 0;
   };
 
-  const stopTimer = () => {
-    if (timerInterval) {
-      clearInterval(timerInterval);
-      setTimerInterval(null);
+  const setCount = (countOrFn) => {
+    setExercise((prev) => {
+      if (!prev) return prev;
+
+      const currentCount = prev.count ?? 0;
+      const nextCount =
+        typeof countOrFn === 'function'
+          ? countOrFn(currentCount)
+          : countOrFn ?? 0;
+
+      let newTotalScore = prev.totalScore ?? 0;
+      let averageScore = prev.averageScore ?? 0;
+      let newCurrentMaxScore = prev.currentMaxScore ?? 0;
+
+      if (nextCount > currentCount) {
+        newTotalScore += currentMaxScoreRef.current;
+        totalScoreRef.current = newTotalScore;
+        averageScore = nextCount > 0 ? newTotalScore / nextCount : 0;
+        currentMaxScoreRef.current = 0;
+        newCurrentMaxScore = 0;
+      }
+
+      return {
+        ...prev,
+        count: nextCount,
+        totalScore: newTotalScore,
+        averageScore,
+        currentMaxScore: newCurrentMaxScore,
+      };
+    });
+  };
+
+  useEffect(() => {
+    const fetchPrograms = async () => {
+      const data = await request('/app/programs', 'GET');
+      const firstProgram = data.find(program => program.order_num === 1);
+      if (firstProgram) {
+        const newExercise = programToExercise(firstProgram);
+        newExercise.sets = 1;
+        resetScoreTracking();
+        setExercise(newExercise);
+        setExerciseReady(true);
+      }
+      setPrograms(data);
     }
-  };
+    fetchPrograms();
+  }, [request]);
 
   useEffect(() => {
     async function init() {
@@ -109,17 +145,14 @@ export default function SmartCounter({ exercise, setExercise, handleClose }) {
       });
 
       setStatus("MoveNet ready — start exercising!");
-      startTimer();
+      setTime(exercise.duration);
+      setTimeLimit(exercise.durationLimit);
       runDetection();
     }
 
-    init();
+    if (exerciseReady) init();
 
     return () => {
-      setExercise((prev) => ({ ...prev, count: countRef.current, duration: durationRef.current }));
-
-      stopTimer();
-      
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
@@ -133,7 +166,7 @@ export default function SmartCounter({ exercise, setExercise, handleClose }) {
         videoRef.current.srcObject = null;
       }
     };
-  }, [setExercise]);
+  }, [exerciseReady]);
 
   async function runDetection() {
     const video = videoRef.current;
@@ -161,28 +194,29 @@ export default function SmartCounter({ exercise, setExercise, handleClose }) {
     detect();
   }
 
-  function drawPose(pose, ctx) {
-    if (!canvasRef.current) return;
-    
-    ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-    pose.keypoints.forEach((kp) => {
-      if (kp.score > 0.5) {
-        ctx.beginPath();
-        ctx.arc(kp.x, kp.y, 5, 0, 2 * Math.PI);
-        ctx.fillStyle = "aqua";
-        ctx.fill();
-      }
-    });
-  }
-
   function checkExercise(pose) {
-
+    if (!exercise || !exerciseFunctions[exercise.id]) return;
     const stableFrames = stableFramesRef.current;
     const currentPose = myPoseRef.current;
 
     if (currentPose) {
-      const result = exerciseFunctions[exercise.name].actionPose(pose);
-      const isDetected = result.detected;
+      const result = exerciseFunctions[exercise.id].actionPose(pose);
+      if (result) {
+        const score = Number.isFinite(result.score) ? Math.round(result.score) : 0;
+        if (score > currentMaxScoreRef.current) {
+          currentMaxScoreRef.current = score;
+          setExercise((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  currentMaxScore: score,
+                }
+              : prev
+          );
+        }
+      }
+      
+      const isDetected = result?.detected;
       
       if (isDetected) {
         stableFramesRef.current++;
@@ -194,17 +228,14 @@ export default function SmartCounter({ exercise, setExercise, handleClose }) {
         stableFramesRef.current = 0;
       }
     } else {
-      const result = exerciseFunctions[exercise.name].initialPose(pose);
+      const result = exerciseFunctions[exercise.id].initialPose(pose);
       
       if (result) {
         stableFramesRef.current++;
         if (stableFrames > 3) {
           myPoseRef.current = true;
           stableFramesRef.current = 0;
-          setCount((prev) => {
-            countRef.current = prev + 1;
-            return prev + 1;
-          });
+          if (!isBreak) setCount((prevCount) => prevCount + 1);
         }
       } else {
         stableFramesRef.current = 0;
@@ -212,127 +243,136 @@ export default function SmartCounter({ exercise, setExercise, handleClose }) {
     }
   }
 
-  if (exercise.durationLimit !== null && duration === exercise.durationLimit) {
-    handleClose();
-    return <></>;
-  }
+  useEffect(() => {
+    if (!isBreak) {
+      breakStartedRef.current = false;
+    }
+    
+    if (!isBreak && exerciseReady && exercise && !breakStartedRef.current) {
+      if (exercise.programTypeId === 1 && exercise.count >= exercise.countLimit) {
+        breakStartedRef.current = true;
+        setExercise((prev) => ({ ...prev, duration: time }));
+        setTime(0);
+        setTimeLimit(exercise.breakTime);
+        setIsBreak(true);
+      } else if (exercise.programTypeId === 2 && timeLimit && time >= timeLimit) {
+        breakStartedRef.current = true;
+        setExercise((prev) => ({ ...prev, duration: time }));
+        setTime(0);
+        setTimeLimit(exercise.breakTime);
+        setIsBreak(true);
+      }
+    }
+  }, [isBreak, exerciseReady, exercise, time, timeLimit]);
 
-  // Video container with overlay
+  useEffect(() => {
+    if (isBreak) {
+      breakCompletedRef.current = false;
+    }
+    
+    if (isBreak && exerciseReady && exercise && timeLimit && time >= timeLimit && !breakCompletedRef.current) {
+      breakCompletedRef.current = true;
+      setIsBreak(false);
+      
+      const currentExercise = exercise;
+      
+      if (currentExercise.sets < currentExercise.setsLimit) {
+        setRecords((prevRecords) => [
+          ...prevRecords,
+          {
+            ...currentExercise,
+            type: 'set',
+            setNumber: currentExercise.sets,
+            totalScore:
+              typeof currentExercise.totalScore === 'number'
+                ? currentExercise.totalScore
+                : totalScoreRef.current,
+            averageScore:
+              typeof currentExercise.averageScore === 'number'
+                ? currentExercise.averageScore
+                : currentExercise.count > 0
+                ? (typeof totalScoreRef.current === 'number'
+                    ? totalScoreRef.current
+                    : 0) / currentExercise.count
+                : 0,
+            timestamp: Date.now(),
+          },
+        ]);
+        resetScoreTracking();
+        setExercise({
+          ...currentExercise,
+          sets: currentExercise.sets + 1,
+          count: 0,
+          duration: 0,
+          currentMaxScore: 0,
+          totalScore: 0,
+          averageScore: 0,
+        });
+        setTime(0);
+        setTimeLimit(currentExercise.durationLimit);
+      } else {
+        setRecords((prevRecords) => [
+          ...prevRecords,
+          {
+            ...currentExercise,
+            type: 'exercise',
+            setNumber: currentExercise.sets,
+            totalScore:
+              typeof currentExercise.totalScore === 'number'
+                ? currentExercise.totalScore
+                : totalScoreRef.current,
+            averageScore:
+              typeof currentExercise.averageScore === 'number'
+                ? currentExercise.averageScore
+                : currentExercise.count > 0
+                ? (typeof totalScoreRef.current === 'number'
+                    ? totalScoreRef.current
+                    : 0) / currentExercise.count
+                : 0,
+            timestamp: Date.now(),
+          },
+        ]);
+        
+        const newOrderNum = currentExercise.orderNum + 1;
+        const nextProgram = programs.find(program => program.order_num === newOrderNum);
+        if (nextProgram) {
+          const newExercise = programToExercise(nextProgram);
+          newExercise.sets = 1;
+          resetScoreTracking();
+          setExercise(newExercise);
+          setTime(0);
+          setTimeLimit(newExercise.durationLimit);
+        } else {
+          handleClose();
+        }
+      }
+    }
+  }, [isBreak, exerciseReady, exercise, timeLimit, time, programs, setRecords, handleClose]);
+
   return (
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100vw',
-        height: '80vh',
-        overflow: 'hidden',
-        margin: 0,
-        padding: 0,
-        borderRadius: '0px 0px 30px 30px'
-      }}>
+      <div className="smart-counter-container">
         <video
           ref={videoRef}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover'
-          }}
+          className="smart-counter-video"
           autoPlay
           playsInline
           muted
         />
         <canvas
           ref={canvasRef}
-          style={{
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover'
-          }}
+          className="smart-counter-canvas"
         />
         
-        <div style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          backgroundColor: 'rgba(0, 0, 0, 0.7)',
-          padding: '20px 40px',
-          borderRadius: '20px',
-          border: '3px solid #ff0000',
-          boxShadow: '0 0 20px rgba(255, 0, 0, 0.5)'
-        }}>
-          <div style={{
-            fontSize: '64px',
-            fontWeight: '900',
-            color: '#ff0000',
-            textShadow: '0 0 10px rgba(255, 0, 0, 0.8), 0 0 20px rgba(255, 0, 0, 0.6)',
-            fontFamily: 'Arial, sans-serif',
-            letterSpacing: '2px'
-          }}>
-            {count}
-          </div>
-        </div>
+        {!isBreak && (
+          <Counters count={exercise?.count} time={time} timeLimit={timeLimit} setTime={setTime} />
+        )}
 
-        <div style={{
-          position: 'absolute',
-          bottom: '20px',
-          left: '20px',
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          padding: '15px 25px',
-          borderRadius: '15px',
-          border: '2px solid #00ff00',
-          boxShadow: '0 0 15px rgba(0, 255, 0, 0.5)'
-        }}>
-          <div style={{
-            fontSize: '24px',
-            fontWeight: 'bold',
-            color: '#00ff00',
-            textShadow: '0 0 5px rgba(0, 255, 0, 0.8)',
-            fontFamily: 'Arial, sans-serif',
-            textAlign: 'center'
-          }}>
-            {exercise.durationLimit !== null 
-              ? Math.floor((exercise.durationLimit - duration) / 60) + ':' + ((exercise.durationLimit - duration) % 60).toString().padStart(2, '0')
-              : Math.floor(duration / 60) + ':' + (duration % 60).toString().padStart(2, '0')
-            }
-          </div>
-          <div style={{
-            fontSize: '12px',
-            color: '#00ff00',
-            textAlign: 'center',
-            marginTop: '5px',
-            opacity: 0.8
-          }}>
-          </div>
-        </div>
+        {isBreak && (
+          <BreakModal time={time} setTime={setTime} timeLimit={timeLimit} />
+        )}
 
         {(status === "Loading model..." || status.includes("Error")) && (
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.9)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 1000
-          }}>
-            <div style={{
-              textAlign: 'center',
-              padding: '20px'
-            }}>
-              <h2 style={{
-                fontSize: '18px',
-                color: '#fff',
-                marginBottom: '10px'
-              }}>{status}</h2>
-            </div>
-          </div>
+          <StatusOverlay status={status} />
         )}
       </div>
   );

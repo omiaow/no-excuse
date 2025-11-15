@@ -455,6 +455,20 @@ body {
 /* Exercise History List */
 .history-page__list-container {
   margin-top: 20px;
+  width: 100%;
+}
+
+.history-page__list-button {
+  width: 100%;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 16px;
+  margin-top: 20px;
+  background-color: #024A70;
+  border: none;
+  color: white;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .history-page__list-title {
