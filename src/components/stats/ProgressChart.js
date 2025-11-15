@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import useHttp from '../../hooks/http.hook';
 import {
   LineChart,
   Line,
@@ -9,15 +10,30 @@ import {
   ResponsiveContainer
 } from 'recharts';
 
-const ProgressChart = ({ data, isMobile, isExtraSmall }) => {
+const ProgressChart = ({ isMobile, isExtraSmall }) => {
   const chartHeight = isExtraSmall ? 140 : isMobile ? 160 : 200;
+
+  const { request } = useHttp();
+  const [progressData, setProgressData] = useState([]);
+
+  useEffect(() => {
+    const fetchProgressData = async () => {
+      const data = await request('/app/progress-data', 'GET');
+      const progressData = data.map(item => ({
+        day: item.day_number,
+        score: item.avg_score,
+      }));
+      setProgressData(progressData);
+    };
+    fetchProgressData();
+  }, [request]);
 
   return (
     <div className="chart-container">
       <h3 className="chart-title">Progress Over Time</h3>
       <div className="chart-no-interact">
         <ResponsiveContainer width="100%" height={chartHeight}>
-          <LineChart data={data} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+          <LineChart data={progressData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#024A70" opacity={0.1} />
           <XAxis 
             dataKey="day" 

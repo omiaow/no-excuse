@@ -1,70 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import StatisticsCards from './stats/StatisticsCards';
-import WeeklyActivityChart from './stats/WeeklyActivityChart';
+import ProgressCountChart from './stats/ProgressCountChart';
 import ProgressChart from './stats/ProgressChart';
-import ExerciseDistributionChart from './stats/ExerciseDistributionChart';
 import StatsCarousel from './stats/StatsCarousel';
 import ExerciseHistoryList from './stats/ExerciseHistoryList';
+import useHttp from '../hooks/http.hook';
 
-const mockExerciseHistory = [
-  { id: 1, name: 'Push-ups', count: 25, duration: 120, score: 95, date: '2024-01-15', sets: 3 },
-  { id: 2, name: 'Push-ups', count: 28, duration: 135, score: 92, date: '2024-01-16', sets: 3 },
-  { id: 3, name: 'Push-ups', count: 30, duration: 145, score: 97, date: '2024-01-17', sets: 3 },
-  { id: 4, name: 'Push-ups', count: 22, duration: 195, score: 90, date: '2024-01-18', sets: 3 },
-  { id: 5, name: 'Push-ups', count: 32, duration: 150, score: 98, date: '2024-01-19', sets: 3 },
-  { id: 6, name: 'Push-ups', count: 35, duration: 155, score: 99, date: '2024-01-20', sets: 3 },
-];
-
-const getWeeklyData = () => {
-  const last7Days = mockExerciseHistory.slice(-7);
-  const dailyTotals = {};
-  
-  last7Days.forEach(exercise => {
-    const date = new Date(exercise.date).toLocaleDateString('en-US', { weekday: 'short' });
-    if (!dailyTotals[date]) {
-      dailyTotals[date] = { date, count: 0, exercises: 0 };
-    }
-    dailyTotals[date].count += exercise.count;
-    dailyTotals[date].exercises += 1;
-  });
-  
-  return Object.values(dailyTotals);
-};
-
-const getProgressData = () => {
-  return mockExerciseHistory.map((exercise, index) => ({
-    day: index + 1,
-    score: exercise.score,
-    count: exercise.count,
-  }));
-};
-
-const getExerciseDistribution = () => {
-  const distribution = {};
-  mockExerciseHistory.forEach(exercise => {
-    distribution[exercise.name] = (distribution[exercise.name] || 0) + 1;
-  });
-  
-  return Object.entries(distribution).map(([name, value]) => ({
-    name: name.replace(' Exercises', ''),
-    value,
-  }));
-};
-
-
-
-const calculateTotalStats = () => {
-  const totalCount = mockExerciseHistory.reduce((sum, e) => sum + e.count, 0);
-  const totalDuration = mockExerciseHistory.reduce((sum, e) => sum + e.duration, 0);
-  const avgScore = Math.round(
-    mockExerciseHistory.reduce((sum, e) => sum + e.score, 0) / mockExerciseHistory.length
-  );
-  return { totalCount, totalDuration, avgScore };
-};
-
-const groupExercisesByDate = () => {
+const groupExercisesByDate = (exerciseHistory) => {
   const grouped = {};
-  mockExerciseHistory.forEach(exercise => {
+  exerciseHistory.forEach(exercise => {
     const date = exercise.date;
     if (!grouped[date]) {
       grouped[date] = [];
@@ -72,7 +16,6 @@ const groupExercisesByDate = () => {
     grouped[date].push(exercise);
   });
   
-  // Sort dates in descending order (newest first)
   const sortedDates = Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a));
   
   return sortedDates.map(date => ({
@@ -83,6 +26,9 @@ const groupExercisesByDate = () => {
 
 function HistoryPage() {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [exerciseHistory, setExerciseHistory] = useState([]);
+  const [stats, setStats] = useState({});
+  const { request } = useHttp();
   
   useEffect(() => {
     const handleResize = () => {
@@ -93,21 +39,46 @@ function HistoryPage() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  useEffect(() => {
+    const fetchRecords = async () => {
+      try {
+        const data = await request('/app/records', 'GET');
+        if (data && data.records && data.stats) {
+          const transformed = data.records.map(record => ({
+            id: record.id,
+            name: record.name,
+            count: record.reps_count,
+            duration: record.duration,
+            score: record.score,
+            date: record.date,
+            sets: 1,
+          }));
+          setStats(data.stats);
+          setExerciseHistory(transformed);
+        }
+      } catch (e) {
+        console.error('Failed to fetch records:', e);
+      }
+    };
+
+    fetchRecords();
+  }, [request]);
+
   const isMobile = windowWidth <= 480;
   const isExtraSmall = windowWidth <= 300;
-
-  const weeklyData = getWeeklyData();
-  const progressData = getProgressData();
-  const exerciseDistribution = getExerciseDistribution();
-  const stats = calculateTotalStats();
-  const groupedExercises = groupExercisesByDate();
+ 
+  const groupedExercises = groupExercisesByDate(exerciseHistory);
 
   const slides = [
-    () => (<StatisticsCards stats={stats} totalSessions={mockExerciseHistory.length} />),
-    () => (<WeeklyActivityChart data={weeklyData} isMobile={isMobile} isExtraSmall={isExtraSmall} />),
-    () => (<ProgressChart data={progressData} isMobile={isMobile} isExtraSmall={isExtraSmall} />),
-    () => (<ExerciseDistributionChart data={exerciseDistribution} isMobile={isMobile} isExtraSmall={isExtraSmall} />),
+    () => (<StatisticsCards stats={stats} />),
   ];
+
+  if (stats.total_days >= 5) {
+    slides.push(
+      () => (<ProgressCountChart isMobile={isMobile} isExtraSmall={isExtraSmall} />),
+      () => (<ProgressChart isMobile={isMobile} isExtraSmall={isExtraSmall} />),
+    );
+  }
 
   return (
     <div className="history-page">
