@@ -18,9 +18,9 @@ const useHttp = () => {
       }
 
       // Add authorization header if token is available
-      // if (auth && auth.token) {
-        headers["Authorization"] = `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiaWF0IjoxNzYyMDIyMDk5fQ.qHdAYf9Er0AySs-mZp8LfxnKHjIdIqOywdmTRrWmn0E`;
-      // }
+      if (auth && auth.token) {
+        headers["Authorization"] = `Bearer ${auth.token}`;
+      }
 
       const response = await fetch(`${process.env.REACT_APP_SERVER}${url}`, { method, body, headers });
       const data = await response.json();
@@ -30,7 +30,6 @@ const useHttp = () => {
       if (!response.ok) {
         setError(data.message || "Something went wrong");
         if (response.status === 401) {
-          window.location.replace(`${window.location.origin}/Login`);
           auth.logout();
         }
       } else {
