@@ -1,7 +1,6 @@
 import AuthContext from "./context/auth.context";
 import useAuth from "./hooks/auth.hook";
 import App from "./App";
-import WebApp from '@twa-dev/sdk';
 import useHttp from "./hooks/http.hook";
 
 
@@ -25,7 +24,7 @@ const useRoutes = isAuthenticated => {
             <App />
         );
     } else {
-        const initDataRaw = WebApp.initDataUnsafe;
+        const initDataRaw = window.Telegram.WebApp.initData;
         console.log(initDataRaw);
 
         return (
