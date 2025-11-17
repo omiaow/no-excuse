@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import WebApp from '@twa-dev/sdk';
+import React, { useState } from 'react';
 import './App.css';
 import MainPage from './components/MainPage';
 import ExercisePage from './components/exercise/ExercisePage';
@@ -9,15 +8,6 @@ import Navigation from './components/Navigation';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('main');
-
-  useEffect(() => {
-    WebApp.ready();
-    WebApp.expand();
-    WebApp.disableVerticalSwipes();
-    WebApp.enableClosingConfirmation();
-    document.querySelector('meta[name="theme-color"]')
-      ?.setAttribute('content', '#000000');
-  }, []);
 
   const handleStartExercise = () => {
     setCurrentPage('exercise');
@@ -43,13 +33,13 @@ function App() {
   };
 
   return (
-    <div className="app">
+    <>
       <div className="app__main-content">
         {renderPage()}
       </div>
       
       <Navigation currentPage={currentPage} onPageChange={setCurrentPage} />
-    </div>
+    </>
   );
 }
 

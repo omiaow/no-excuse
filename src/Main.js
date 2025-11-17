@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import WebApp from '@twa-dev/sdk';
 import AuthContext from "./context/auth.context";
 import useAuth from "./hooks/auth.hook";
 import App from "./App";
@@ -59,16 +60,28 @@ function Main() {
         }
     }, [isAuthenticated, login, request]);
 
+    useEffect(() => {
+        WebApp.ready();
+        WebApp.expand();
+        WebApp.disableVerticalSwipes();
+        WebApp.enableClosingConfirmation();
+        document.querySelector('meta[name="theme-color"]')
+            ?.setAttribute('content', '#000000');
+    }, []);
 
+
+    let app;
     if (isAuthenticated) {
-        return (
+        app = (
             <AuthContext.Provider value={{ token, login, logout, isAuthenticated }}>
                 <App />
             </AuthContext.Provider>
         );
     } else {
-        return <Spinner />;
+        app = <Spinner />;
     }
+
+    return <div className="app">{app}</div>;
 }
 
 export default Main;
