@@ -1194,3 +1194,106 @@ body {
   }
 }
 
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 12, 24, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(2px);
+}
+
+.loading-overlay__card {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 28px 36px;
+  border-radius: 22px;
+  box-shadow: 0 12px 32px rgba(2, 74, 112, 0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.loading-overlay__spinner {
+  width: 56px;
+  height: 56px;
+  border: 5px solid rgba(2, 74, 112, 0.2);
+  border-top-color: #00c3ff;
+  border-radius: 50%;
+  animation: loadingOverlaySpin 0.9s linear infinite;
+}
+
+.loading-overlay__text {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #024a70;
+}
+
+@keyframes loadingOverlaySpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.program-page__loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 12, 24, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(2px);
+}
+
+.program-page__loading-card {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 28px 36px;
+  border-radius: 22px;
+  box-shadow: 0 12px 32px rgba(2, 74, 112, 0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.program-page__spinner {
+  width: 56px;
+  height: 56px;
+  border: 5px solid rgba(2, 74, 112, 0.2);
+  border-top-color: #00c3ff;
+  border-radius: 50%;
+  animation: programPageSpin 0.9s linear infinite;
+}
+
+.program-page__loading-text {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #024a70;
+}
+
+@keyframes programPageSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.history-page__empty-state {
+  margin: 32px auto;
+  padding: 32px 24px;
+  border-radius: 18px;
+  border: 2px dashed rgba(2, 74, 112, 0.2);
+  background: rgba(0, 195, 255, 0.05);
+  max-width: 640px;
+  text-align: center;
+}
+
+.history-page__empty-text {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #024a70;
+  margin: 0;
+}
+

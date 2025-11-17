@@ -1,30 +1,14 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import ExercisePickerModal from './program/ExercisePickerModal';
 import TimePickerModal from './program/TimePickerModal';
+import ProgramStepsList from './program/ProgramStepsList';
 import useHttp from '../hooks/http.hook';
-
-// Helper function to convert HH:MM:SS or HH:MM to seconds
-function timeStringToSeconds(timeString) {
-  if (!timeString) return 0;
-  const parts = timeString.split(':').map(Number);
-  if (parts.length === 3) {
-    // HH:MM:SS format
-    return parts[0] * 3600 + parts[1] * 60 + parts[2];
-  } else if (parts.length === 2) {
-    // HH:MM format
-    return parts[0] * 3600 + parts[1] * 60;
-  }
-  return 0;
-}
-
-// Helper function to convert seconds to HH:MM:SS format
-function secondsToTimeString(totalSeconds) {
-  if (!totalSeconds) return null;
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-}
+import LoadingOverlay from './common/LoadingOverlay';
+import {
+  timeStringToSeconds,
+  secondsToTimeString,
+  formatSecondsToMMSS,
+} from './program/timeUtils';
 
 // Transform API program to component format
 function apiProgramToStep(apiProgram, exercisesMap) {
@@ -63,21 +47,12 @@ function stepToApiProgram(step, orderNum) {
   };
 }
 
-function formatSecondsToMMSS(totalSeconds) {
-  const minutes = Math.floor(totalSeconds / 60)
-    .toString()
-    .padStart(2, '0');
-  const seconds = (totalSeconds % 60).toString().padStart(2, '0');
-  return `${minutes}:${seconds}`;
-}
-
 function ProgramPage() {
   const [programSteps, setProgramSteps] = useState([]);
   const [configuringStepId, setConfiguringStepId] = useState(null);
   const [timeModal, setTimeModal] = useState({ open: false, stepId: null, field: null });
   const [exercises, setExercises] = useState([]);
   const [exercisesMap, setExercisesMap] = useState({});
-  const [prev, setPrev] = useState(1);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const { loading, request } = useHttp();
 
@@ -187,8 +162,26 @@ function ProgramPage() {
     await savePrograms(newSteps);
   };
 
+  const handleTimeFieldRequest = useCallback((stepId, field) => {
+    setTimeModal({ open: true, stepId, field });
+  }, []);
+
+  const handleStepDone = useCallback(async (stepId) => {
+    setConfiguringStepId(currentId => (currentId === stepId ? null : currentId));
+    await savePrograms(programSteps);
+  }, [programSteps, savePrograms]);
+
   return (
     <div className="app__page program-page">
+      {loading && (
+        <LoadingOverlay
+          overlayClassName="program-page__loading-overlay"
+          cardClassName="program-page__loading-card"
+          spinnerClassName="program-page__spinner"
+          textClassName="program-page__loading-text"
+          text="Loading..."
+        />
+      )}
       <div className="program-page__header">
         <h1 className="program-page__title">Exercise program</h1>
       </div>
@@ -212,195 +205,16 @@ function ProgramPage() {
         />
       )}
 
-      <div className="program__list">
-        {programSteps.length === 0 ? (
-          <div className="card program__empty">
-            <p className="app__page-description">No exercises yet. Add from the list above.</p>
-          </div>
-        ) : (
-          programSteps.map((step, index) => (
-            <div key={step.id} className="card program-card">
-              <div className="program-card__header">
-                <div className="program-card__title" onClick={() => setConfiguringStepId(step.id)}>
-                  <div className="badge">{index + 1}</div>
-                  <div>
-                    <div className="program-card__name">{step.exerciseLabel}</div>
-                    <div className="program-card__meta">
-                      {step.mode === 'timer'
-                        ? `Timer: ${formatSecondsToMMSS(step.durationSec)} • Break: ${formatSecondsToMMSS(step.breakSec)} • Sets: ${step.sets || 1}`
-                        : `Reps: ${step.maxCount} • Break: ${formatSecondsToMMSS(step.breakSec)} • Sets: ${step.sets || 1}`}
-                    </div>
-                  </div>
-                </div>
-                <div className="program-card__buttons">
-                  <button className="button button--ghost" onClick={() => removeStep(step.id)}>
-                    <div className="wrap"><p>Remove</p></div>
-                  </button>
-                </div>
-              </div>
-
-              {configuringStepId === step.id && (
-                <div className="program__config">
-                  <div className="program__config-grid">
-
-                    {step.mode === 'timer' ? (
-                      <div className="program__fields-row">
-                        <div className="program__field">
-                          <label className="app__page-description">Duration</label>
-                          <button
-                            className="button program__select-btn"
-                            onClick={() => setTimeModal({ open: true, stepId: step.id, field: 'durationSec' })}
-                          >
-                            <div className="wrap"><p>{timeOptions.find(o => o.value === step.durationSec)?.label}</p></div>
-                          </button>
-                        </div>
-                        <div className="program__field">
-                          <label className="app__page-description">Break</label>
-                          <button
-                            className="button program__select-btn"
-                            onClick={() => setTimeModal({ open: true, stepId: step.id, field: 'breakSec' })}
-                          >
-                            <div className="wrap"><p>{timeOptions.find(o => o.value === step.breakSec)?.label}</p></div>
-                          </button>
-                        </div>
-                        <div className="program__field">
-                          <label className="app__page-description">Sets</label>
-                          <input
-                            className="input program__input"
-                            inputMode="numeric"
-                            pattern="[0-9]*"
-                            type="number"
-                            min={1}
-                            step={1}
-                            value={step.sets}
-                            onFocus={(e) => {
-                              setPrev(step.sets);
-                              updateStep(step.id, { sets: '' });
-                            }}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              if (val === '') {
-                                updateStep(step.id, { sets: '' });
-                              } else {
-                                const numVal = Math.max(1, Number(val));
-                                updateStep(step.id, { sets: numVal });
-                              }
-                            }}
-                            onBlur={(e) => {
-                              if (!step.sets || step.sets === '') {
-                                updateStep(step.id, { sets: prev });
-                              }
-                            }}
-                          />
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="program__fields-row">
-                        <div className="program__field">
-                          <label className="app__page-description">Max reps</label>
-                          <input
-                            className="input program__input"
-                            inputMode="numeric"
-                            pattern="[0-9]*"
-                            type="number"
-                            min={1}
-                            step={1}
-                            value={step.maxCount}
-                            onFocus={(e) => {
-                              setPrev(step.maxCount);
-                              updateStep(step.id, { maxCount: '' });
-                            }}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              if (val === '') {
-                                updateStep(step.id, { maxCount: '' });
-                              } else {
-                                const numVal = Math.max(1, Number(val));
-                                updateStep(step.id, { maxCount: numVal });
-                              }
-                            }}
-                            onBlur={(e) => {
-                              if (step.maxCount === '') {
-                                updateStep(step.id, { maxCount: prev });
-                              }
-                            }}
-                          />
-                        </div>
-                        <div className="program__field">
-                          <label className="app__page-description">Break</label>
-                          <button
-                            className="button program__select-btn"
-                            onClick={() => setTimeModal({ open: true, stepId: step.id, field: 'breakSec' })}
-                          >
-                            <div className="wrap"><p>{timeOptions.find(o => o.value === step.breakSec)?.label}</p></div>
-                          </button>
-                        </div>
-                        <div className="program__field">
-                          <label className="app__page-description">Sets</label>
-                          <input
-                            className="input program__input"
-                            inputMode="numeric"
-                            pattern="[0-9]*"
-                            type="number"
-                            min={1}
-                            step={1}
-                            value={step.sets}
-                            onFocus={(e) => {
-                              setPrev(step.sets);
-                              updateStep(step.id, { sets: '' });
-                            }}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              if (val === '') {
-                                updateStep(step.id, { sets: '' });
-                              } else {
-                                const numVal = Math.max(1, Number(val));
-                                updateStep(step.id, { sets: numVal });
-                              }
-                            }}
-                            onBlur={(e) => {
-                              if (!step.sets || step.sets === '') {
-                                updateStep(step.id, { sets: prev });
-                              }
-                            }}
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    <div>
-                      <div className="program__mode-row">
-                        <button
-                          className={`button button--toggle ${step.mode === 'counter' ? 'button--active' : ''}`}
-                          onClick={() => updateStep(step.id, { mode: 'counter' })}
-                        >
-                          <div className="wrap"><p>Counter</p></div>
-                        </button>
-                        <button
-                          className={`button button--toggle ${step.mode === 'timer' ? 'button--active' : ''}`}
-                          onClick={() => updateStep(step.id, { mode: 'timer' })}
-                        >
-                          <div className="wrap"><p>Timer</p></div>
-                        </button>
-
-                        <div style={{ marginLeft: 'auto' }}>
-                          <button className="button" onClick={async () => {
-                            setConfiguringStepId(null);
-                            await savePrograms(programSteps);
-                          }}>
-                            <div className="wrap"><p>Done</p></div>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                </div>
-              )}
-            </div>
-          ))
-        )}
-      </div>
+      <ProgramStepsList
+        steps={programSteps}
+        configuringStepId={configuringStepId}
+        onConfigure={setConfiguringStepId}
+        onRemove={removeStep}
+        onUpdate={updateStep}
+        onTimeFieldRequest={handleTimeFieldRequest}
+        onDone={handleStepDone}
+        timeOptions={timeOptions}
+      />
 
 
       {timeModal.open && (

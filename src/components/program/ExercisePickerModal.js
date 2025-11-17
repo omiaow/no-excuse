@@ -1,12 +1,8 @@
 import React, { useState, useCallback } from 'react';
 
 const EXERCISE_ICONS = {
-  push_ups: '💪',
-  squats: '🦵',
-  plank: '🧘',
-  jumping_jacks: '🤸',
-  lunges: '🦵',
-  sit_ups: '🏋️',
+  "1": '💪',
+  "2": '🦵',
 };
 
 function ExercisePickerModal({ exercises, onChoose, onClose }) {
@@ -29,7 +25,7 @@ function ExercisePickerModal({ exercises, onChoose, onClose }) {
         <div className="program-modal__list">
           {exercises.map(ex => (
             <button key={ex.key} className="program-modal__item" onClick={() => onChoose(ex.key)}>
-              <span className="program-modal__icon">{EXERCISE_ICONS[ex.key]}</span>
+              <span className="program-modal__icon">{EXERCISE_ICONS[ex.id]}</span>
               <span className="program-modal__label">{ex.label}</span>
             </button>
           ))}
