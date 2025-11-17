@@ -65,6 +65,7 @@ function Main() {
         WebApp.expand();
         WebApp.disableVerticalSwipes();
         WebApp.enableClosingConfirmation();
+        WebApp.requestFullscreen();
         document.querySelector('meta[name="theme-color"]')
             ?.setAttribute('content', '#000000');
     }, []);
