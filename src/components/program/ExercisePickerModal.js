@@ -1,12 +1,17 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
+import SkeletonCard from './SkeletonCard';
+import useHttp from '../../hooks/http.hook';
 
 const EXERCISE_ICONS = {
   "1": '💪',
   "2": '🦵',
 };
 
-function ExercisePickerModal({ exercises, onChoose, onClose }) {
+function ExercisePickerModal({ onChoose, onClose }) {
   const [isClosing, setIsClosing] = useState(false);
+  const [exercises, setExercises] = useState([]);
+  const [error, setError] = useState(null);
+  const { loading, request } = useHttp();
 
   const handleRequestClose = useCallback(() => {
     if (isClosing) return;
@@ -16,20 +21,67 @@ function ExercisePickerModal({ exercises, onChoose, onClose }) {
     }, 220);
   }, [isClosing, onClose]);
 
+  useEffect(() => {
+    let mounted = true;
+    const fetchExercises = async () => {
+      try {
+        const data = await request('/app/exercises', 'GET');
+        if (mounted) {
+          setExercises(
+            (data || []).map(ex => ({
+              id: ex.id,
+              name: ex.name,
+              key: `exercise_${ex.id}`,
+            }))
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          setError('Failed to load exercises');
+        }
+      }
+    };
+    fetchExercises();
+    return () => {
+      mounted = false;
+    };
+  }, [request]);
+
+  const handleChoose = (exercise) => {
+    if (!exercise || loading) return;
+    onChoose(exercise);
+  };
+
   return (
     <div className={`program-modal ${isClosing ? 'program-modal--closing' : ''}`} onClick={handleRequestClose}>
       <div className="program-modal__sheet" onClick={(e) => e.stopPropagation()}>
         <div className="program-modal__header">
           <div className="program-modal__title">Choose exercise</div>
         </div>
-        <div className="program-modal__list">
-          {exercises.map(ex => (
-            <button key={ex.key} className="program-modal__item" onClick={() => onChoose(ex.key)}>
-              <span className="program-modal__icon">{EXERCISE_ICONS[ex.id]}</span>
-              <span className="program-modal__label">{ex.label}</span>
-            </button>
-          ))}
-        </div>
+        {loading && (
+          <div className="program-modal__list program-modal__list--loading">
+            <SkeletonCard />
+          </div>
+        )}
+        {!loading && error && (
+          <div className="program-modal__list program-modal__list--error">
+            {error}
+          </div>
+        )}
+        {!loading && !error && (
+          <div className="program-modal__list">
+            {exercises.map(ex => (
+              <button
+                key={ex.key}
+                className="program-modal__item"
+                onClick={() => handleChoose(ex)}
+              >
+                <span className="program-modal__icon">{EXERCISE_ICONS[ex.id] || '🏋️'}</span>
+                <span className="program-modal__label">{ex.name}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <button className="program-modal__close-bottom" onClick={(e) => { e.stopPropagation(); handleRequestClose(); }} aria-label="Close">

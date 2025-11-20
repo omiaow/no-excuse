@@ -14,11 +14,21 @@ function MainPage({ onStartExercise }) {
     fetchRecordDays()
   }, [])
 
+  const titleText = recordDays > 0 
+    ? `Day ${recordDays} with No Excuse` 
+    : `Start with No Excuse`;
+
   return (
     <div className="app__page app__page--stats" style={{ paddingTop: '250px' }}>
-      <h1 className="app__page-title">{ loading ? ' ' : recordDays > 0 ?
-      `Day ${recordDays} with No Excuse` :
-      `Start with No Excuse`}</h1>
+      <h1 className="app__page-title">
+        {loading ? (
+          <span className="skeleton-text skeleton-text--title">
+            Loading...
+          </span>
+        ) : (
+          <span className="app__page-title-text">{titleText}</span>
+        )}
+      </h1>
       <p className="app__page-description">Your personal training partner</p>
       <button className="start-button" onClick={onStartExercise}>
         <div className="wrap">
