@@ -8,12 +8,10 @@ const formatDuration = (seconds) => {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 };
 
-function ExercisePage({ close }) {
+function ExercisePage({ page }) {
     const { request } = useHttp();
 
     const [records, setRecords] = useState([]);
-
-    console.log(records);
 
     const handleSave = async () => {
         try {
@@ -26,7 +24,7 @@ function ExercisePage({ close }) {
                 date: new Date().toISOString(),
                 paid: false,
             })));
-            close?.();
+            page?.('history');
         } catch (error) {
             console.error('Failed to save records:', error);
         }
@@ -59,6 +57,11 @@ function ExercisePage({ close }) {
                         </div>
                     </div>
                     <button className="history-page__list-button" onClick={handleSave}>Save</button>
+                </div>
+            )}
+            {records.length === 0 && (
+                <div className="history-page__list-container" style={{ padding: '20px' }}>
+                    <button className="history-page__list-button" onClick={() => page?.('program')}>Exercise programs</button>
                 </div>
             )}
         </>

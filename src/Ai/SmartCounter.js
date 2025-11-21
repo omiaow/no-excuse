@@ -88,6 +88,8 @@ export default function SmartCounter({ handleClose, setRecords }) {
         resetScoreTracking();
         setExercise(newExercise);
         setExerciseReady(true);
+      } else {
+        handleClose();
       }
       setPrograms(data);
     }
