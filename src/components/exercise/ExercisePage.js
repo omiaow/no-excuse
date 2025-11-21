@@ -61,8 +61,8 @@ function ExercisePage({ page }) {
             )}
             {records.length === 0 && (
                 <div className="history-page__list-container" style={{ padding: '20px' }}>
-                    <h2 className="history-page__list-title" style={{ color: '#6C8E9E', marginBottom: '0px' }}>You haven't created any exercise programs yet</h2>
-                    <button className="history-page__list-button" onClick={() => page?.('program')}>Create</button>
+                    <h2 className="history-page__list-title" style={{ color: '#6C8E9E', marginBottom: '0px' }}>Create or edit your exercise programs</h2>
+                    <button className="history-page__list-button" onClick={() => page?.('program')}>Programs</button>
                 </div>
             )}
         </>

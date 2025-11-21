@@ -366,7 +366,14 @@ export default function SmartCounter({ handleClose, setRecords }) {
         />
         
         {!isBreak && (
-          <Counters count={exercise?.count} time={time} timeLimit={timeLimit} setTime={setTime} />
+          <>
+            <Counters count={exercise?.count} time={time} timeLimit={timeLimit} setTime={setTime} />
+            {exercise?.name && (
+              <div className="smart-counter-exercise-name-text">
+                {exercise.name}
+              </div>
+            )}
+          </>
         )}
 
         {isBreak && (
