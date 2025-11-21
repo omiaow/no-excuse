@@ -1191,6 +1191,10 @@ body {
   flex-direction: column;
   gap: 14px;
 }
+
+.program-modal__list--loading {
+  padding: 18px 5% calc(110px + env(safe-area-inset-bottom)) 5%;
+}
 .program-modal__item {
   display: flex;
   align-items: center;
@@ -1229,6 +1233,9 @@ body {
   .program-modal__list {
     padding: 12px 0 calc(100px + env(safe-area-inset-bottom)) 0;
     gap: 10px;
+  }
+  .program-modal__list--loading {
+    padding: 12px 5% calc(100px + env(safe-area-inset-bottom)) 5%;
   }
   .program-modal__item {
     padding: 8px 12px;
