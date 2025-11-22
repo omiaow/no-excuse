@@ -47,8 +47,8 @@ function ExercisePage({ page }) {
                                                 <span className="exercise-card__meta-item">Reps: {record.count}</span>
                                                 <span className="exercise-card__meta-separator">•</span>
                                                 <span className="exercise-card__meta-item">Time: {formatDuration(record.duration)}</span>
-                                                <span className="exercise-card__meta-separator">•</span>
-                                                <span className="exercise-card__meta-item">Score: {parseInt(record.averageScore)}%</span>
+                                                {/* <span className="exercise-card__meta-separator">•</span>
+                                                <span className="exercise-card__meta-item">Score: {parseInt(record.averageScore)}%</span> */}
                                             </div>
                                         </div>
                                     </div>

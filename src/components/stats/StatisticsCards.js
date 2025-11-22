@@ -19,16 +19,16 @@ const StatisticsCards = ({ stats }) => {
         <div className="stat-card__value">{formatDuration(stats?.total_duration || 0)}</div>
         <div className="stat-card__label">Total Time</div>
       </div>
-      <div className="stat-card">
+      {/* <div className="stat-card">
         <div className="stat-card__icon">⭐</div>
         <div className="stat-card__value">{stats?.avg_score || 0}%</div>
         <div className="stat-card__label">Avg Score</div>
-      </div>
-      <div className="stat-card">
+      </div> */}
+      {/* <div className="stat-card">
         <div className="stat-card__icon">💪</div>
         <div className="stat-card__value">{stats?.total_days || 0}</div>
         <div className="stat-card__label">Sessions</div>
-      </div>
+      </div> */}
     </div>
   );
 };
