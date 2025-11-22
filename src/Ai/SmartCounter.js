@@ -6,7 +6,7 @@ import "@tensorflow/tfjs-backend-webgl";
 import useHttp from '../hooks/http.hook';
 
 import exerciseFunctions from './poses/pose';
-import { programToExercise, drawPose } from './utils';
+import { programToExercise } from './utils';
 
 import './SmartCounter.css';
 
@@ -187,7 +187,7 @@ export default function SmartCounter({ handleClose, setRecords }) {
       if (detectorRef.current && video.readyState === 4) {
         const poses = await detectorRef.current.estimatePoses(video);
         if (poses[0] && canvasRef.current) {
-          drawPose(poses[0], ctx);
+          // drawPose(poses[0], ctx); // Disabled to hide body detection dots
           checkExercise(poses[0]);
         }
       }
